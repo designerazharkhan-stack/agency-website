@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#846020"/>
+      <stop offset="30%" stop-color="#C29A3C"/>
+      <stop offset="52%" stop-color="#F6EED6"/>
+      <stop offset="72%" stop-color="#DFC884"/>
+      <stop offset="100%" stop-color="#A67C2A"/>
+    </linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#16161A"/>
+      <stop offset="60%" stop-color="#08080A"/>
+      <stop offset="100%" stop-color="#050505"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="22%" cy="18%" r="70%">
+      <stop offset="0%" stop-color="#C29A3C" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#C29A3C" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <g stroke="#ffffff" stroke-opacity="0.05">
+    <path d="M0 158h1200M0 316h1200M0 474h1200"/>
+    <path d="M300 0v630M600 0v630M900 0v630"/>
+  </g>
+
+  <g transform="translate(96 108)">
+    <path d="M30 4 54 17v26L30 56 6 43V17L30 4Z" fill="none" stroke="url(#gold)" stroke-width="1.6" opacity="0.9"/>
+    <path d="M30 20 39 25.5v11L30 42l-9-5.5v-11L30 20Z" fill="none" stroke="url(#gold)" stroke-width="1.2" opacity="0.55"/>
+    <path d="M30 29l6.4 3.8L30 36.6 23.6 32.8 30 29Zm0 0v12m6.4-9.4v-3" fill="none" stroke="url(#gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="76" y="42" font-family="Georgia, 'Times New Roman', serif" font-size="38" letter-spacing="6" fill="#F5F2EC">AGENCY WEBSITE</text>
+  </g>
+
+  <text x="96" y="330" font-family="Georgia, 'Times New Roman', serif" font-size="86" font-weight="300" fill="#F5F2EC">
+    Websites built to
+  </text>
+  <text x="96" y="424" font-family="Georgia, 'Times New Roman', serif" font-size="86" font-weight="300" fill="url(#gold)">
+    earn their keep.
+  </text>
+
+  <text x="96" y="500" font-family="Helvetica, Arial, sans-serif" font-size="26" fill="#B9B4A9">
+    Web Development · WordPress · UI/UX · SEO · E-commerce · Maintenance
+  </text>
+  <rect x="96" y="546" width="240" height="2" fill="url(#gold)" opacity="0.7"/>
+</svg>

@@ -1,0 +1,384 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------ *
+ *  AGENCY WEBSITE — Dark luxury design system
+ * ------------------------------------------------------------------ */
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --nav-h: 76px;
+    --gold: 194 154 60;
+    --gold-soft: 226 200 132;
+    --bone: 245 242 236;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+
+  body {
+    @apply bg-ink-950 font-sans text-bone antialiased;
+    font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+    overflow-x: hidden;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: rgba(194, 154, 60, 0.32);
+    color: #fbf7ec;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display font-light text-bone;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgba(226, 200, 132, 0.75);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #08080a;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #5e4517, #26262d);
+    border-radius: 99px;
+    border: 2px solid #08080a;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #846020, #3a3a44);
+  }
+
+  /* Inputs */
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+  }
+
+  [type='search']::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ *  Components
+ * ------------------------------------------------------------------ */
+
+@layer components {
+  /* --- Layout --------------------------------------------------- */
+  .shell {
+    @apply container mx-auto;
+  }
+
+  .section {
+    @apply relative py-20 sm:py-24 lg:py-32;
+  }
+
+  .section-tight {
+    @apply relative py-16 sm:py-20 lg:py-24;
+  }
+
+  .hairline {
+    @apply h-px w-full bg-hairline opacity-40;
+  }
+
+  .hairline-t {
+    @apply h-px w-full bg-hairline opacity-30;
+  }
+
+  /* --- Typography ------------------------------------------------ */
+  .eyebrow {
+    @apply inline-flex items-center gap-3 font-sans text-[0.68rem] font-medium uppercase tracking-luxe text-gold-300;
+  }
+
+  .eyebrow::before {
+    content: '';
+    @apply h-px w-8 bg-gold-500/70;
+  }
+
+  .eyebrow-center {
+    @apply inline-flex items-center gap-3 font-sans text-[0.68rem] font-medium uppercase tracking-luxe text-gold-300;
+  }
+  .eyebrow-center::before,
+  .eyebrow-center::after {
+    content: '';
+    @apply h-px w-8 bg-gold-500/70;
+  }
+
+  .display {
+    @apply font-display font-light leading-[1.03] tracking-[-0.03em] text-bone;
+  }
+
+  .gold-text {
+    @apply bg-gold-sheen bg-clip-text text-transparent;
+    background-size: 220% 220%;
+  }
+
+  .lede {
+    @apply text-base leading-relaxed text-bone-muted sm:text-lg sm:leading-loose;
+  }
+
+  .muted {
+    @apply text-bone-muted;
+  }
+
+  /* --- Surfaces -------------------------------------------------- */
+  .panel {
+    @apply relative rounded-2xl border border-white/[0.07] bg-ink-850/70 backdrop-blur-xl;
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.045),
+      0 30px 80px -50px rgba(0, 0, 0, 0.9);
+  }
+
+  .panel-gold {
+    @apply relative rounded-2xl border border-gold-500/25 bg-ink-850/80 backdrop-blur-xl;
+    box-shadow:
+      inset 0 1px 0 0 rgba(226, 200, 132, 0.09),
+      0 30px 90px -50px rgba(194, 154, 60, 0.5);
+  }
+
+  .card-hover {
+    @apply transition-all duration-700 ease-luxe;
+  }
+  .card-hover:hover {
+    @apply -translate-y-1.5 border-gold-500/30;
+    box-shadow:
+      inset 0 1px 0 0 rgba(226, 200, 132, 0.08),
+      0 44px 90px -48px rgba(194, 154, 60, 0.55);
+  }
+
+  /* --- Decoration ------------------------------------------------ */
+  .noise::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.045;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .grid-lines {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.032) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.032) 1px, transparent 1px);
+    background-size: 72px 72px;
+  }
+
+  .orb {
+    @apply pointer-events-none absolute rounded-full blur-[110px];
+  }
+
+  /* --- Buttons --------------------------------------------------- */
+  .btn {
+    @apply relative inline-flex select-none items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full px-6 py-3 text-[0.8rem] font-medium uppercase tracking-wide2 transition-all duration-500 ease-luxe disabled:pointer-events-none disabled:opacity-45;
+  }
+
+  .btn-primary {
+    @apply btn text-ink-950;
+    background: linear-gradient(115deg, #846020 0%, #c29a3c 30%, #f6eed6 52%, #dfc884 68%, #a67c2a 100%);
+    background-size: 220% 220%;
+    box-shadow: 0 14px 40px -18px rgba(194, 154, 60, 0.75);
+  }
+  .btn-primary:hover {
+    background-position: 100% 50%;
+    box-shadow: 0 20px 55px -18px rgba(226, 200, 132, 0.6);
+    transform: translateY(-2px);
+  }
+
+  .btn-ghost {
+    @apply btn border border-gold-500/35 bg-white/[0.015] text-bone hover:border-gold-400/70 hover:bg-gold-500/[0.07] hover:text-gold-100;
+  }
+
+  .btn-outline-light {
+    @apply btn border border-white/15 bg-transparent text-bone hover:border-white/40 hover:bg-white/[0.04];
+  }
+
+  .btn-quiet {
+    @apply btn px-0 text-bone-muted hover:text-gold-200;
+  }
+
+  .btn-sm {
+    @apply px-4 py-2 text-[0.7rem];
+  }
+  .btn-lg {
+    @apply px-8 py-4 text-[0.82rem];
+  }
+
+  /* Sheen sweep on primary buttons */
+  .btn-sheen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-120%) skewX(-18deg);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+    transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .btn-sheen:hover::after {
+    transform: translateX(120%) skewX(-18deg);
+  }
+
+  /* --- Forms (admin) --------------------------------------------- */
+  .field-label {
+    @apply mb-2 block font-sans text-[0.7rem] font-medium uppercase tracking-wide2 text-bone-dim;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-white/10 bg-ink-900/80 px-3.5 py-2.5 text-sm text-bone placeholder:text-bone-dim/50 transition-colors duration-300;
+  }
+  .field:focus {
+    @apply border-gold-500/60 bg-ink-900 outline-none ring-1 ring-gold-500/30;
+  }
+
+  .field-err {
+    @apply border-red-500/50;
+  }
+
+  /* --- Chips / tags ---------------------------------------------- */
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[0.68rem] uppercase tracking-wide2 text-bone-muted;
+  }
+
+  .chip-gold {
+    @apply chip border-gold-500/30 bg-gold-500/[0.08] text-gold-200;
+  }
+
+  /* --- Reveal animation ------------------------------------------ */
+  .reveal {
+    opacity: 0;
+    transform: translate3d(0, 30px, 0);
+    transition:
+      opacity 1s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+  }
+  .reveal.is-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* --- Prose (blog) ---------------------------------------------- */
+  .prose-luxe {
+    @apply text-[1.02rem] leading-[1.85] text-bone-muted;
+  }
+  .prose-luxe > * + * {
+    @apply mt-6;
+  }
+  .prose-luxe h2 {
+    @apply mt-14 font-display text-3xl font-light text-bone sm:text-4xl;
+  }
+  .prose-luxe h3 {
+    @apply mt-10 font-display text-2xl font-light text-bone;
+  }
+  .prose-luxe h2 + *,
+  .prose-luxe h3 + * {
+    @apply mt-4;
+  }
+  .prose-luxe strong {
+    @apply font-medium text-bone;
+  }
+  .prose-luxe a {
+    @apply text-gold-200 underline decoration-gold-500/40 underline-offset-4 transition-colors hover:text-gold-100 hover:decoration-gold-300;
+  }
+  .prose-luxe ul {
+    @apply space-y-3 pl-1;
+  }
+  .prose-luxe ul > li {
+    @apply relative pl-7;
+  }
+  .prose-luxe ul > li::before {
+    content: '';
+    @apply absolute left-0 top-[0.7em] h-1 w-1 rotate-45 bg-gold-400;
+  }
+  .prose-luxe ol {
+    @apply list-decimal space-y-3 pl-6 marker:font-display marker:text-gold-300;
+  }
+  .prose-luxe blockquote {
+    @apply border-l-2 border-gold-500/50 bg-gold-500/[0.05] py-4 pl-6 pr-4 font-display text-xl font-light italic text-bone/90;
+  }
+  .prose-luxe code {
+    @apply rounded-md bg-white/[0.07] px-1.5 py-0.5 font-mono text-[0.85em] text-gold-200;
+  }
+  .prose-luxe pre {
+    @apply overflow-x-auto rounded-xl border border-white/10 bg-ink-900 p-5 font-mono text-[0.82rem] leading-relaxed;
+  }
+  .prose-luxe pre code {
+    @apply bg-transparent p-0 text-bone-muted;
+  }
+  .prose-luxe hr {
+    @apply my-12 h-px bg-white/10;
+  }
+  .prose-luxe img {
+    @apply w-full rounded-xl border border-white/10;
+  }
+}
+
+@layer utilities {
+  .text-shadow-luxe {
+    text-shadow: 0 2px 30px rgba(0, 0, 0, 0.55);
+  }
+
+  .mask-fade-b {
+    -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+  }
+
+  .mask-fade-x {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .writing-vertical {
+    writing-mode: vertical-rl;
+  }
+
+  .stack-tight {
+    display: grid;
+    gap: 0.5rem;
+  }
+}

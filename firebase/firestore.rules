@@ -1,0 +1,82 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    function isPublished() {
+      return resource.data.published == true && resource.data.get('draft', false) != true;
+    }
+
+    function isContentCollection(collection) {
+      return collection in [
+        'services',
+        'projects',
+        'posts',
+        'plans',
+        'testimonials',
+        'values',
+        'stats',
+        'process',
+        'team',
+        'clients',
+        'awards',
+        'faqs'
+      ];
+    }
+
+    match /{collection}/{documentId} {
+      allow read: if collection == 'settings'
+        || (isContentCollection(collection) && (isAdmin() || isPublished()));
+      allow write: if (collection == 'settings' || isContentCollection(collection))
+        && isAdmin();
+    }
+
+    match /submissions/{submissionId} {
+      allow read, update, delete: if isAdmin();
+      allow create: if request.auth == null
+        && request.resource.data.keys().hasAll([
+          'name',
+          'email',
+          'message',
+          'status',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'name',
+          'email',
+          'phone',
+          'company',
+          'budget',
+          'services',
+          'message',
+          'status',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 120
+        && request.resource.data.email is string
+        && request.resource.data.email.matches('^[^@]+@[^@]+\\.[^@]+$')
+        && request.resource.data.email.size() <= 254
+        && request.resource.data.message is string
+        && request.resource.data.message.size() >= 20
+        && request.resource.data.message.size() <= 5000
+        && request.resource.data.status == 'new'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && (!('phone' in request.resource.data) || request.resource.data.phone is string)
+        && (!('company' in request.resource.data) || request.resource.data.company is string)
+        && (!('budget' in request.resource.data) || request.resource.data.budget is string)
+        && (!('services' in request.resource.data)
+          || (request.resource.data.services is list && request.resource.data.services.size() <= 6))
+        && (!('phone' in request.resource.data) || request.resource.data.phone.size() <= 30)
+        && (!('company' in request.resource.data) || request.resource.data.company.size() <= 150)
+        && (!('budget' in request.resource.data) || request.resource.data.budget.size() <= 80);
+    }
+  }
+}

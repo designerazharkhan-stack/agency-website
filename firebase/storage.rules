@@ -1,0 +1,30 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    function isSafeImage() {
+      return request.resource != null
+        && request.resource.size <= 12 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp|gif)');
+    }
+
+    match /brand/{path=**} {
+      allow read: if true;
+      allow write: if isAdmin() && (request.resource == null || isSafeImage());
+    }
+
+    match /media/{path=**} {
+      allow read: if true;
+      allow write: if isAdmin() && (request.resource == null || isSafeImage());
+    }
+
+    match /{path=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

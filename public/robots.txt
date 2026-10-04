@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+
+# Build artefacts and editor noise
+Disallow: /*.json$
+Disallow: /*.map$
+
+Sitemap: https://agency-website.web.app/sitemap.xml

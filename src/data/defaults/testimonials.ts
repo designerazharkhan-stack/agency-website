@@ -1,0 +1,116 @@
+import type { TestimonialDoc } from '@/types/content'
+
+const img = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=400&q=80`
+
+export const defaultTestimonials: TestimonialDoc[] = [
+  {
+    id: 'tst-meridian',
+    quote:
+      'They understood that our clients buy slowness — then found a way to make it look intentional instead of broken. Nothing has moved this fast in a decade of measured change.',
+    name: 'Helena Brandt',
+    role: 'Chief Marketing Officer',
+    company: 'Meridian Private Bank',
+    avatarUrl: img('photo-1573496359142-b8d87734a5a2'),
+    rating: 5,
+    featured: true,
+    projectSlug: 'meridian-private-bank',
+    published: true,
+    order: 1,
+  },
+  {
+    id: 'tst-verdant',
+    quote:
+      'Every previous agency wanted to redesign our logo. This one spent three weeks in a tractor cab with our agronomists and rebuilt the actual product. The support line finally went quiet.',
+    name: 'Dr. Ronan Ellis',
+    role: 'Managing Director',
+    company: 'Verdant Supply Co.',
+    avatarUrl: img('photo-1472099645785-5658abf4ff4e'),
+    rating: 5,
+    featured: true,
+    projectSlug: 'verdant-supply-co',
+    published: true,
+    order: 2,
+  },
+  {
+    id: 'tst-halcyon',
+    quote:
+      'We asked for a brand. What we got was an argument for who we actually are, delivered so convincingly that our own staff started telling the story differently.',
+    name: 'Tomás Ferreira',
+    role: 'Founder',
+    company: 'Halcyon House',
+    avatarUrl: img('photo-1519345182560-3f2917c472ef'),
+    rating: 5,
+    featured: true,
+    published: true,
+    order: 3,
+  },
+  {
+    id: 'tst-atlas',
+    quote:
+      'The handover was the part nobody else offered. Eight months on, our own engineers are extending the system without calling anyone. That is the outcome I wanted.',
+    name: 'Priya Raghunathan',
+    role: 'Operating Partner',
+    company: 'Atlas Ventures',
+    avatarUrl: img('photo-1544005313-94ddf0286df2'),
+    rating: 5,
+    featured: true,
+    projectSlug: 'atlas-corporate-ventures',
+    published: true,
+    order: 4,
+  },
+  {
+    id: 'tst-kinetic',
+    quote:
+      'They refused to make the pretty film we asked for, and were right. The configurator is what closed our fleet deals, and it was the least glamorous thing on the page.',
+    name: 'Julian Okafor',
+    role: 'Co-founder & CEO',
+    company: 'Kinetic Mobility',
+    avatarUrl: img('photo-1507003211169-0a1dd7228f2d'),
+    rating: 5,
+    featured: true,
+    projectSlug: 'kinetic-mobility',
+    published: true,
+    order: 5,
+  },
+  {
+    id: 'tst-northline',
+    quote:
+      'Six months after launch we won two competitions against practices four times our size. Both firms had found us through a drawing on that website.',
+    name: 'Sofia Lindqvist',
+    role: 'Partner',
+    company: 'Northline Architecture',
+    avatarUrl: img('photo-1438761681033-6461ffad8d80'),
+    rating: 5,
+    featured: false,
+    projectSlug: 'northline-architecture',
+    published: true,
+    order: 6,
+  },
+  {
+    id: 'tst-sable',
+    quote:
+      'Our entire business is a conversation. They rebuilt the website around that fact rather than working around it. Revenue from dialogue went from zero to a third of the company.',
+    name: 'Imogen Hart',
+    role: 'Creative Director',
+    company: 'Sable Atelier',
+    avatarUrl: img('photo-1607746882042-944635dfe10e'),
+    rating: 5,
+    featured: false,
+    projectSlug: 'sable-atelier',
+    published: true,
+    order: 7,
+  },
+  {
+    id: 'tst-macro',
+    quote:
+      'The only agency we have worked with that pushed back. That should not be a differentiator and it is.',
+    name: 'Daniel Achebe',
+    role: 'VP Product',
+    company: 'Macro Logistics',
+    avatarUrl: img('photo-1500648767791-00dcc994a43e'),
+    rating: 5,
+    featured: false,
+    published: true,
+    order: 8,
+  },
+]
