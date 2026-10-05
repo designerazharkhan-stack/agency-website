@@ -1,9 +1,9 @@
-import { Link } from 'react-router-dom'
 import { ArrowUpRight, Check, MoveDown } from 'lucide-react'
 
 import { PlanCard, PostCard, ProcessStep, TestimonialCard, ValueCard } from '@/components/cards'
 import { Container, Section, SectionHeading } from '@/components/ui/Section'
 import { LinkButton } from '@/components/ui/Button'
+import { GlobalCTA } from '@/components/shared-zone/SharedZoneComponents'
 import { useReveal } from '@/hooks/useReveal'
 import { ViewAllLink } from './Sections'
 import type {
@@ -94,7 +94,7 @@ export function TestimonialsSection({
   const list = (featured.length ? featured : testimonials).slice(0, showAll ? 24 : 6)
 
   return (
-    <Section className="relative">
+    <Section className="relative overflow-hidden">
       <div
         className="pointer-events-none absolute -right-40 top-1/4 -z-10 h-[26rem] w-[26rem] rounded-full bg-gold-500/[0.06] blur-[130px]"
         aria-hidden="true"
@@ -220,36 +220,7 @@ export function FinalCtaSection({ cta }: { cta: CtaSettings }) {
       />
 
       <Container>
-        <div className="reveal panel-gold relative overflow-hidden px-6 py-14 text-center sm:px-12 sm:py-20">
-          <span className="hairline absolute inset-x-10 top-0" aria-hidden="true" />
-
-          {cta.eyebrow ? (
-            <span className="inline-flex items-center gap-2.5 rounded-full border border-gold-500/30 bg-gold-500/[0.08] px-4 py-1.5 text-[0.62rem] uppercase tracking-luxe text-gold-200">
-              <span className="h-1.5 w-1.5 animate-pulse-gold rounded-full bg-gold-300" aria-hidden="true" />
-              {cta.eyebrow}
-            </span>
-          ) : null}
-
-          <h2 className="display mx-auto mt-8 max-w-4xl text-display-sm">{cta.headline}</h2>
-
-          {cta.body ? <p className="lede mx-auto mt-6 max-w-2xl">{cta.body}</p> : null}
-
-          <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-            <LinkButton to={cta.buttonHref} size="lg" iconRight={<ArrowUpRight className="h-4 w-4" />}>
-              {cta.buttonLabel}
-            </LinkButton>
-            <LinkButton to="/portfolio" variant="ghost" size="lg">
-              See the work first
-            </LinkButton>
-          </div>
-
-          <p className="mt-8 text-[0.68rem] uppercase tracking-wide2 text-bone-dim">
-            Or email us directly ·{' '}
-            <Link to="/contact" className="text-gold-300 underline decoration-gold-500/40 underline-offset-4">
-              we reply within two working hours
-            </Link>
-          </p>
-        </div>
+        <GlobalCTA cta={cta} />
       </Container>
     </Section>
   )

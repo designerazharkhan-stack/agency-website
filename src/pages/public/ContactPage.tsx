@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { CheckCircle2, Clock, Mail, MapPin, MessageCircle, Phone, Send } from 'lucide-react'
+import { CheckCircle2, Clock, Send } from 'lucide-react'
 
 import { PageHero, PageSection } from '@/components/layout/PageHero'
 import { Container, SectionHeading } from '@/components/ui/Section'
@@ -10,7 +10,7 @@ import { useSiteContent } from '@/context/ContentContext'
 import { useReveal } from '@/hooks/useReveal'
 import { createSubmission, getServices } from '@/lib/content'
 import { useSeo } from '@/lib/seo'
-import { resolveSocialIcon } from '@/lib/icons'
+import { GlobalContact, SocialLinks } from '@/components/shared-zone/SharedZoneComponents'
 import { siteEnv } from '@/lib/env'
 import { cn, safeHref } from '@/lib/utils'
 import { hasErrors, validateEmail, validateName, type FieldErrors } from '@/lib/validators'
@@ -146,8 +146,6 @@ export default function ContactPage() {
 
   const contact = site.contact
   const directEmail = contact?.email || siteEnv.contactEmail
-  const directPhone = contact?.phone || siteEnv.contactPhone
-  const whatsappDigits = contact?.whatsapp?.replace(/\D/g, '')
 
   const officeList = useMemo(
     () => [
@@ -337,86 +335,10 @@ export default function ContactPage() {
               <div className="space-y-5 lg:sticky lg:top-28">
                 <div className="panel p-7">
                   <h2 className="font-display text-2xl font-light text-bone">Reach us directly</h2>
-                  <ul className="mt-7 space-y-5">
-                    <li>
-                      <a
-                        href={safeHref(`mailto:${directEmail}`)}
-                        className="group flex items-start gap-3.5"
-                      >
-                        <Mail className="mt-0.5 h-4 w-4 shrink-0 text-gold-400" aria-hidden="true" />
-                        <span>
-                          <span className="block text-[0.62rem] uppercase tracking-wide2 text-bone-dim">Email</span>
-                          <span className="mt-0.5 block text-sm text-bone transition-colors group-hover:text-gold-200">
-                            {directEmail}
-                          </span>
-                        </span>
-                      </a>
-                    </li>
-                    {directPhone ? (
-                      <li>
-                        <a
-                          href={safeHref(`tel:${directPhone.replace(/[^\d+]/g, '')}`)}
-                          className="group flex items-start gap-3.5"
-                        >
-                          <Phone className="mt-0.5 h-4 w-4 shrink-0 text-gold-400" aria-hidden="true" />
-                          <span>
-                            <span className="block text-[0.62rem] uppercase tracking-wide2 text-bone-dim">
-                              Telephone
-                            </span>
-                            <span className="mt-0.5 block text-sm text-bone transition-colors group-hover:text-gold-200">
-                              {directPhone}
-                            </span>
-                          </span>
-                        </a>
-                      </li>
-                    ) : null}
-                    {whatsappDigits ? (
-                      <li>
-                        <a
-                          href={safeHref(`https://wa.me/${whatsappDigits}`)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="group flex items-start gap-3.5"
-                        >
-                          <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-gold-400" aria-hidden="true" />
-                          <span>
-                            <span className="block text-[0.62rem] uppercase tracking-wide2 text-bone-dim">WhatsApp</span>
-                            <span className="mt-0.5 block text-sm text-bone transition-colors group-hover:text-gold-200">
-                              {contact?.whatsapp}
-                            </span>
-                          </span>
-                        </a>
-                      </li>
-                    ) : null}
-                    {contact?.addressLine1 ? (
-                      <li className="flex items-start gap-3.5">
-                        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gold-400" aria-hidden="true" />
-                        <span>
-                          <span className="block text-[0.62rem] uppercase tracking-wide2 text-bone-dim">Studio</span>
-                          <span className="mt-0.5 block text-sm leading-relaxed text-bone-muted">
-                            {contact.addressLine1}
-                            {contact.addressLine2 ? (
-                              <>
-                                <br />
-                                {contact.addressLine2}
-                              </>
-                            ) : null}
-                            <br />
-                            {[contact.city, contact.country].filter(Boolean).join(', ')}
-                          </span>
-                          {contact.mapUrl ? (
-                            <a
-                              href={safeHref(contact.mapUrl)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="mt-2 inline-block text-[0.68rem] uppercase tracking-wide2 text-gold-300 underline underline-offset-4"
-                            >
-                              View on map
-                            </a>
-                          ) : null}
-                        </span>
-                      </li>
-                    ) : null}
+                  <div className="mt-6">
+                    <GlobalContact />
+                  </div>
+                  <ul className="mt-5 border-t border-white/[0.06] pt-4">
                     <li className="flex items-start gap-3.5">
                       <Clock className="mt-0.5 h-4 w-4 shrink-0 text-gold-400" aria-hidden="true" />
                       <span>
@@ -448,24 +370,7 @@ export default function ContactPage() {
                 {site.socials?.length ? (
                   <div className="panel p-7">
                     <h2 className="font-display text-2xl font-light text-bone">Elsewhere</h2>
-                    <ul className="mt-6 flex flex-wrap gap-2">
-                      {site.socials.map((social) => {
-                        const Icon = resolveSocialIcon(social.icon)
-                        return (
-                          <li key={social.id}>
-                            <a
-                              href={safeHref(social.href)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.02] px-4 py-2 text-[0.68rem] uppercase tracking-wide2 text-bone-dim transition-colors hover:border-gold-500/40 hover:text-gold-200"
-                            >
-                              <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-                              {social.label}
-                            </a>
-                          </li>
-                        )
-                      })}
-                    </ul>
+                    <div className="mt-5"><SocialLinks /></div>
                   </div>
                 ) : null}
 

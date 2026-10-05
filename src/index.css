@@ -13,6 +13,9 @@
     --gold: 194 154 60;
     --gold-soft: 226 200 132;
     --bone: 245 242 236;
+    --brand-primary: #050505;
+    --brand-secondary: #16161A;
+    --brand-accent: #C29A3C;
   }
 
   * {
@@ -39,9 +42,15 @@
 
   body {
     @apply bg-ink-950 font-sans text-bone antialiased;
+    background-color: var(--brand-primary);
     font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
-    overflow-x: hidden;
     text-rendering: optimizeLegibility;
+  }
+
+  img,
+  video {
+    display: block;
+    max-width: 100%;
   }
 
   ::selection {
@@ -104,7 +113,8 @@
 @layer components {
   /* --- Layout --------------------------------------------------- */
   .shell {
-    @apply container mx-auto;
+    @apply container mx-auto w-full;
+    min-width: 0;
   }
 
   .section {
@@ -162,6 +172,7 @@
   /* --- Surfaces -------------------------------------------------- */
   .panel {
     @apply relative rounded-2xl border border-white/[0.07] bg-ink-850/70 backdrop-blur-xl;
+    background-color: color-mix(in srgb, var(--brand-secondary) 78%, transparent);
     box-shadow:
       inset 0 1px 0 0 rgba(255, 255, 255, 0.045),
       0 30px 80px -50px rgba(0, 0, 0, 0.9);
@@ -169,6 +180,7 @@
 
   .panel-gold {
     @apply relative rounded-2xl border border-gold-500/25 bg-ink-850/80 backdrop-blur-xl;
+    background-color: color-mix(in srgb, var(--brand-secondary) 84%, transparent);
     box-shadow:
       inset 0 1px 0 0 rgba(226, 200, 132, 0.09),
       0 30px 90px -50px rgba(194, 154, 60, 0.5);
@@ -213,7 +225,14 @@
 
   .btn-primary {
     @apply btn text-ink-950;
-    background: linear-gradient(115deg, #846020 0%, #c29a3c 30%, #f6eed6 52%, #dfc884 68%, #a67c2a 100%);
+    background: linear-gradient(
+      115deg,
+      color-mix(in srgb, var(--brand-accent) 58%, #3d2d10) 0%,
+      var(--brand-accent) 34%,
+      #f6eed6 55%,
+      color-mix(in srgb, var(--brand-accent) 68%, #f6eed6) 76%,
+      color-mix(in srgb, var(--brand-accent) 60%, #3d2d10) 100%
+    );
     background-size: 220% 220%;
     box-shadow: 0 14px 40px -18px rgba(194, 154, 60, 0.75);
   }
@@ -262,6 +281,7 @@
 
   .field {
     @apply w-full rounded-xl border border-white/10 bg-ink-900/80 px-3.5 py-2.5 text-sm text-bone placeholder:text-bone-dim/50 transition-colors duration-300;
+    background-color: color-mix(in srgb, var(--brand-secondary) 84%, #000);
   }
   .field:focus {
     @apply border-gold-500/60 bg-ink-900 outline-none ring-1 ring-gold-500/30;

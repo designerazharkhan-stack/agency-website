@@ -35,6 +35,7 @@ import {
   defaultProcess,
   defaultProjects,
   defaultServices,
+  defaultSharedZone,
   defaultSite,
   defaultStats,
   defaultTeam,
@@ -55,6 +56,7 @@ import type {
   ProcessStepDoc,
   ProjectDoc,
   ServiceDoc,
+  SharedZone,
   SiteContent,
   StatDoc,
   TeamMemberDoc,
@@ -273,12 +275,149 @@ export async function readSiteContent(): Promise<SiteContent> {
     readNavigation(),
     readFooter(),
   ])
-  return { brand, hero, cta, contact, socials, seo, theme, navigation, footer }
+  const legacySite = { brand, hero, cta, contact, socials, seo, theme, navigation, footer }
+  const savedSharedZone = await readSharedZoneDocument()
+  const statByLabel = (pattern: RegExp, fallback: string) =>
+    hero.stats.find((stat) => pattern.test(stat.label))?.value ?? fallback
+  const reservedStatLabels = /project|year|rating|clients?(?: served| count)?$/i
+  const sharedZone = mergeDefaults(
+    mergeDefaults(defaultSharedZone, {
+      brand,
+      theme,
+      cta,
+      contact,
+      socials,
+      seo,
+      trust: {
+        ...defaultSharedZone.trust,
+        projectsCount: statByLabel(/project/i, defaultSharedZone.trust.projectsCount),
+        experienceYears: statByLabel(/year/i, defaultSharedZone.trust.experienceYears),
+        rating: statByLabel(/rating/i, defaultSharedZone.trust.rating),
+        stats: hero.stats.filter((stat) => !reservedStatLabels.test(stat.label)),
+      },
+      footer: {
+        ...footer,
+        quickLinks: defaultSharedZone.footer.quickLinks,
+        serviceLinks: defaultSharedZone.footer.serviceLinks,
+        copyrightText: defaultSharedZone.footer.copyrightText,
+        newsletter: defaultSharedZone.footer.newsletter,
+      },
+    }),
+    savedSharedZone,
+  )
+  return {
+    ...legacySite,
+    brand: sharedZone.brand,
+    hero: {
+      ...hero,
+      stats: [
+        { id: 'shared-projects', value: sharedZone.trust.projectsCount, label: 'Projects delivered' },
+        { id: 'shared-years', value: sharedZone.trust.experienceYears, label: 'Years of experience' },
+        { id: 'shared-rating', value: sharedZone.trust.rating, label: 'Average rating' },
+        ...(sharedZone.trust.clientCount
+          ? [{ id: 'shared-clients', value: sharedZone.trust.clientCount, label: 'Clients' }]
+          : []),
+        ...sharedZone.trust.stats,
+      ].filter((stat) => stat.value.trim()),
+    },
+    cta: sharedZone.cta,
+    theme: sharedZone.theme,
+    contact: sharedZone.contact,
+    socials: sharedZone.socials,
+    seo: sharedZone.seo,
+    footer: sharedZone.footer,
+    sharedZone,
+  }
 }
 
 /* -------------------------------------------------------------------------- */
 /*  Admin reads                                                               */
 /* -------------------------------------------------------------------------- */
+
+async function readSharedZoneDocument(): Promise<Partial<SharedZone> | null> {
+  if (!firebaseReady) return null
+  try {
+    const db = await getDb()
+    const snapshot = await getDoc(settingsRef(db, 'sharedZone'))
+    return snapshot.exists()
+      ? cleanDoc<Partial<SharedZone>>(snapshot.id, snapshot.data())
+      : null
+  } catch (error) {
+    console.warn('[content] Could not load Shared Zone; using existing settings.', toMessage(error))
+    return null
+  }
+}
+
+export async function readSharedZoneForAdmin(): Promise<SharedZone> {
+  const saved = await readSharedZoneDocument()
+  if (saved) return mergeDefaults(defaultSharedZone, saved)
+  const currentSite = await readSiteContent()
+  return currentSite.sharedZone ?? defaultSharedZone
+}
+
+export async function saveSharedZone(value: SharedZone): Promise<void> {
+  assertFirebaseConfigured()
+  try {
+    const db = await getDb()
+    const compact = (input: unknown): unknown => {
+      if (Array.isArray(input)) return input.map(compact)
+      if (input && typeof input === 'object') {
+        return Object.fromEntries(
+          Object.entries(input).filter(([, child]) => child !== undefined).map(([key, child]) => [key, compact(child)]),
+        )
+      }
+      return input
+    }
+    const compactValue = compact(value)
+    if (!compactValue || typeof compactValue !== 'object' || Array.isArray(compactValue)) {
+      throw new ContentError('Shared Zone data must be a settings object.')
+    }
+    const payload: Record<string, unknown> = Object.fromEntries(Object.entries(compactValue))
+    payload.updatedAt = serverTimestamp()
+    await setDoc(settingsRef(db, 'sharedZone'), payload, { merge: true })
+  } catch (error) {
+    throw new ContentError(toMessage(error), error)
+  }
+}
+
+export function subscribeToSharedZone(
+  onData: (value: SharedZone) => void,
+  onError: (error: Error) => void,
+): () => void {
+  let cancelled = false
+  let unsubscribe: (() => void) | null = null
+
+  const run = async () => {
+    try {
+      assertFirebaseConfigured()
+      const db = await getDb()
+      if (cancelled) return
+      unsubscribe = onSnapshot(
+        settingsRef(db, 'sharedZone'),
+        (snapshot) => {
+          if (snapshot.exists()) {
+            onData(mergeDefaults(defaultSharedZone, cleanDoc<Partial<SharedZone>>(snapshot.id, snapshot.data())))
+            return
+          }
+          void readSharedZoneForAdmin().then((value) => {
+            if (!cancelled) onData(value)
+          }).catch((error: unknown) => {
+            onError(error instanceof Error ? error : new ContentError(toMessage(error), error))
+          })
+        },
+        (error) => onError(new ContentError(toMessage(error), error)),
+      )
+    } catch (error) {
+      onError(error instanceof Error ? error : new ContentError(toMessage(error), error))
+    }
+  }
+
+  void run()
+  return () => {
+    cancelled = true
+    unsubscribe?.()
+  }
+}
 
 export async function readSettingForAdmin<K extends SettingsKey>(key: K): Promise<SiteContent[K]> {
   if (!firebaseReady) return SETTINGS_DEFAULTS[key]
@@ -302,6 +441,41 @@ export async function saveSetting<K extends SettingsKey>(key: K, value: SiteCont
       updatedAt: serverTimestamp(),
     })
     await setDoc(settingsRef(db, key as never), payload, { merge: true })
+
+    const savedSharedZone = await readSharedZoneDocument()
+    if (!savedSharedZone) return
+    const current = mergeDefaults(defaultSharedZone, savedSharedZone)
+    let next: SharedZone | null = null
+    if (key === 'brand') {
+      next = { ...current, brand: { ...current.brand, ...(value as SiteContent['brand']) } }
+    } else if (key === 'theme') {
+      next = { ...current, theme: value as SiteContent['theme'] }
+    } else if (key === 'hero') {
+      const heroStats = (value as SiteContent['hero']).stats
+      const findStat = (pattern: RegExp, fallback: string) =>
+        heroStats.find((stat) => pattern.test(stat.label))?.value ?? fallback
+      next = {
+        ...current,
+        trust: {
+          ...current.trust,
+          projectsCount: findStat(/project/i, current.trust.projectsCount),
+          experienceYears: findStat(/year/i, current.trust.experienceYears),
+          rating: findStat(/rating/i, current.trust.rating),
+          stats: heroStats.filter((stat) => !/project|year|rating|clients?(?: served| count)?$/i.test(stat.label)),
+        },
+      }
+    } else if (key === 'cta') {
+      next = { ...current, cta: value as SiteContent['cta'] }
+    } else if (key === 'contact') {
+      next = { ...current, contact: { ...current.contact, ...(value as SiteContent['contact']) } }
+    } else if (key === 'socials') {
+      next = { ...current, socials: value as SiteContent['socials'] }
+    } else if (key === 'seo') {
+      next = { ...current, seo: value as SiteContent['seo'] }
+    } else if (key === 'footer') {
+      next = { ...current, footer: { ...current.footer, ...(value as SiteContent['footer']) } }
+    }
+    if (next) await saveSharedZone(next)
   } catch (error) {
     throw new ContentError(toMessage(error), error)
   }

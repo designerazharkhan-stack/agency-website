@@ -60,11 +60,13 @@ export function applySeo(options: {
   twitterHandle?: string
   locale?: string
   publishedTime?: string
+  siteUrl?: string
+  themeColor?: string
 }): void {
   if (typeof document === 'undefined') return
 
   const { canonicalPath = '/' } = options
-  const canonical = absoluteUrl(canonicalPath)
+  const canonical = absoluteUrl(canonicalPath, options.siteUrl)
   const siteName = options.siteName?.trim() || DEFAULT_SITE_NAME
   const fullTitle = options.title.toLowerCase().includes(siteName.toLowerCase())
     ? options.title
@@ -99,6 +101,8 @@ export function applySeo(options: {
   ]
 
   for (const meta of managed) upsertAttribute('meta', 'name', meta.name, meta.content)
+  if (options.themeColor) upsertAttribute('meta', 'name', 'theme-color', options.themeColor)
+  else removeAttribute('meta', 'name', 'theme-color')
   for (const meta of og) upsertAttribute('meta', 'property', meta.property, meta.content)
   for (const meta of twitter) upsertAttribute('meta', 'name', meta.name, meta.content)
 
@@ -157,6 +161,8 @@ export function useSeo(options: {
       siteName: siteName ?? deriveSiteName(site?.title),
       twitterHandle: site?.twitterHandle,
       locale: site?.locale,
+      siteUrl: site?.siteUrl,
+      themeColor: site?.themeColor,
       publishedTime,
     })
   }, [
@@ -179,5 +185,7 @@ export function useSeo(options: {
     site?.ogImage,
     site?.twitterHandle,
     site?.locale,
+    site?.siteUrl,
+    site?.themeColor,
   ])
 }

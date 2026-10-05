@@ -2,15 +2,17 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { ArrowUpRight, Menu, Phone, X } from 'lucide-react'
 
-import { Logo } from './Logo'
 import { Button, LinkButton } from '@/components/ui/Button'
+import { AnnouncementBar, SiteBrand, SocialLinks } from '@/components/shared-zone/SharedZoneComponents'
 import { useScrolledPast } from '@/hooks/useScroll'
 import { useSiteContent } from '@/context/ContentContext'
+import { useSharedZone } from '@/context/SharedZoneContext'
 import { cn, safeHref } from '@/lib/utils'
-import type { BrandSettings, NavItem } from '@/types/content'
+import type { NavItem } from '@/types/content'
 
 export function Navbar() {
   const site = useSiteContent()
+  const sharedZone = useSharedZone()
   const scrolled = useScrolledPast(20)
   const [open, setOpen] = useState(false)
   const location = useLocation()
@@ -46,7 +48,7 @@ export function Navbar() {
       { label: 'Contact', href: '/contact' },
     ]
 
-  const cta = site.hero?.primaryCtaHref ? site.hero.primaryCtaLabel : 'Start a project'
+  const cta = sharedZone.cta.buttonLabel || 'Start a project'
 
   return (
     <>
@@ -58,6 +60,7 @@ export function Navbar() {
       </a>
 
       <header
+        data-public-navbar
         className={cn(
           'fixed inset-x-0 top-0 z-[100] transition-all duration-700 ease-luxe',
           scrolled
@@ -65,10 +68,11 @@ export function Navbar() {
             : 'border-b border-transparent bg-gradient-to-b from-ink-950/80 to-transparent',
         )}
       >
-        <div className="shell flex h-[var(--nav-h)] items-center justify-between gap-6">
-          <Logo brand={site.brand} />
+        <AnnouncementBar />
+        <div className="shell flex h-[var(--nav-h)] items-center justify-between gap-3 xl:gap-6">
+          <SiteBrand />
 
-          <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary">
+          <nav className="hidden items-center gap-0 lg:flex xl:gap-1" aria-label="Primary">
             {nav.map((item) => (
               <NavLink
                 key={item.href}
@@ -76,7 +80,7 @@ export function Navbar() {
                 end={item.href === '/'}
                 className={({ isActive }) =>
                   cn(
-                    'group relative px-4 py-2 text-[0.78rem] uppercase tracking-wide2 transition-colors duration-400',
+                    'group relative px-2 py-2 text-[0.7rem] uppercase tracking-wide2 transition-colors duration-400 xl:px-4 xl:text-[0.78rem]',
                     isActive ? 'text-gold-200' : 'text-bone-muted hover:text-bone',
                   )
                 }
@@ -97,16 +101,16 @@ export function Navbar() {
             ))}
           </nav>
 
-          <div className="hidden items-center gap-4 lg:flex">
+          <div className="hidden items-center gap-2 lg:flex xl:gap-4">
             <a
-              href={safeHref(site.contact?.phone ? `tel:${site.contact.phone.replace(/[^\d+]/g, '')}` : 'tel:+14155550182')}
+              href={safeHref(sharedZone.contact.phone ? `tel:${sharedZone.contact.phone.replace(/[^\d+]/g, '')}` : 'tel:+14155550182')}
               className="flex items-center gap-2 text-[0.72rem] uppercase tracking-wide2 text-bone-dim transition-colors hover:text-gold-200"
             >
               <Phone className="h-3.5 w-3.5" aria-hidden="true" />
-              <span className="hidden xl:inline">{site.contact?.phone}</span>
+              <span className="hidden xl:inline">{sharedZone.contact.phone}</span>
             </a>
             <LinkButton
-              to={site.hero?.primaryCtaHref || '/contact'}
+              to={sharedZone.cta.buttonHref || '/contact'}
               size="sm"
               iconRight={<ArrowUpRight className="h-3.5 w-3.5" />}
             >
@@ -120,6 +124,7 @@ export function Navbar() {
             onClick={() => setOpen(true)}
             aria-label="Open menu"
             aria-expanded={open}
+            aria-controls="mobile-navigation"
           >
             <Menu className="h-6 w-6" />
           </Button>
@@ -133,10 +138,8 @@ export function Navbar() {
         onClose={() => setOpen(false)}
         nav={nav}
         ctaLabel={cta}
-        ctaHref={site.hero?.primaryCtaHref ?? '/contact'}
-        phone={site.contact?.phone ?? ''}
-        socials={site.socials ?? []}
-        brand={site.brand}
+        ctaHref={sharedZone.cta.buttonHref || '/contact'}
+        phone={sharedZone.contact.phone}
       />
     </>
   )
@@ -149,8 +152,6 @@ function MobileMenu({
   ctaLabel,
   ctaHref,
   phone,
-  socials,
-  brand,
 }: {
   open: boolean
   onClose: () => void
@@ -158,15 +159,16 @@ function MobileMenu({
   ctaLabel: string
   ctaHref: string
   phone: string
-  socials: Array<{ id: string; label: string; href: string }>
-  brand: BrandSettings
 }) {
+  const { brand } = useSharedZone()
+
   return (
     <div
       className={cn(
         'fixed inset-0 z-[110] lg:hidden',
         open ? 'pointer-events-auto' : 'pointer-events-none',
       )}
+      id="mobile-navigation"
       aria-hidden={!open}
       inert={!open}
       role="dialog"
@@ -189,7 +191,7 @@ function MobileMenu({
         style={{ transitionDuration: '500ms' }}
       >
         <div className="mb-10 flex items-center justify-between">
-          <Logo brand={brand} compact />
+          <SiteBrand compact />
           <Button variant="quiet" className="!px-2" onClick={onClose} aria-label="Close menu">
             <X className="h-6 w-6" />
           </Button>
@@ -224,22 +226,7 @@ function MobileMenu({
             </a>
           ) : null}
 
-          {socials.length ? (
-            <ul className="flex flex-wrap items-center justify-center gap-4 pt-2">
-              {socials.map((social) => (
-                <li key={social.id}>
-                  <a
-                    href={safeHref(social.href)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[0.68rem] uppercase tracking-wide2 text-bone-dim transition-colors hover:text-gold-200"
-                  >
-                    {social.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          ) : null}
+          <div className="flex justify-center pt-2"><SocialLinks iconOnly /></div>
         </div>
       </div>
     </div>

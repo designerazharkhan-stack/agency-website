@@ -6,10 +6,11 @@ import { PageHero, PageSection } from '@/components/layout/PageHero'
 import { Container, Orb, SectionHeading } from '@/components/ui/Section'
 import { LinkButton } from '@/components/ui/Button'
 import { AvatarPreview } from '@/components/ui/FormKit'
+import { TrustStats } from '@/components/shared-zone/SharedZoneComponents'
 import { useSiteContent } from '@/context/ContentContext'
 import { useAsync } from '@/hooks/useAsync'
 import { useReveal } from '@/hooks/useReveal'
-import { getAwards, getClients, getFaqs, getProcessSteps, getStats, getTeam, getValues } from '@/lib/content'
+import { getAwards, getClients, getFaqs, getProcessSteps, getTeam, getValues } from '@/lib/content'
 import { useSeo } from '@/lib/seo'
 import { safeHref } from '@/lib/utils'
 
@@ -19,16 +20,15 @@ export default function AboutPage() {
 
   const { data } = useAsync(
     async () => {
-      const [values, stats, team, clients, awards, steps, faqs] = await Promise.all([
+      const [values, team, clients, awards, steps, faqs] = await Promise.all([
         getValues(),
-        getStats(),
         getTeam(),
         getClients(),
         getAwards(),
         getProcessSteps(),
         getFaqs(),
       ])
-      return { values, stats, team, clients, awards, steps, faqs }
+      return { values, team, clients, awards, steps, faqs }
     },
     [],
   )
@@ -41,8 +41,6 @@ export default function AboutPage() {
     site: site.seo,
   })
 
-  const stats = data?.stats ?? []
-
   return (
     <>
       <PageHero
@@ -50,8 +48,8 @@ export default function AboutPage() {
         title="Independent since"
         accent="2014"
         description="We have stayed deliberately small. Twelve projects a year, senior-only teams, and every engagement carrying a number we committed to moving before we started."
-        meta={stats.slice(0, 4).map((stat) => ({ label: stat.label, value: stat.value }))}
       />
+      <TrustStats />
 
       {/* Manifesto */}
       <PageSection>

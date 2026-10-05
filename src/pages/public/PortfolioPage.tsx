@@ -57,7 +57,7 @@ export default function PortfolioPage() {
       />
 
       {/* Filters */}
-      <div className="sticky top-[var(--nav-h)] z-40 border-b border-white/[0.06] bg-ink-950/85 backdrop-blur-xl">
+      <div className="sticky top-[var(--public-header-height,var(--nav-h))] z-40 border-b border-white/[0.06] bg-ink-950/85 backdrop-blur-xl">
         <Container className="py-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="-mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-1 no-scrollbar sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">

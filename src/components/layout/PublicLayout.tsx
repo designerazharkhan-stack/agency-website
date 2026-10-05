@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Outlet, ScrollRestoration, useLocation } from 'react-router-dom'
 
-import { Footer } from './Footer'
+import { SiteFooter } from './Footer'
 import { Navbar } from './Navbar'
 import { ToastViewport } from '@/components/ui/Toast'
 
@@ -27,15 +27,30 @@ function ScrollManager() {
 
 /** Public site shell — everything outside `/admin`. */
 export function PublicLayout() {
+  useEffect(() => {
+    const header = document.querySelector<HTMLElement>('[data-public-navbar]')
+    if (!header) return
+    const updateHeight = () => {
+      document.documentElement.style.setProperty('--public-header-height', `${header.offsetHeight}px`)
+    }
+    updateHeight()
+    const observer = new ResizeObserver(updateHeight)
+    observer.observe(header)
+    return () => {
+      observer.disconnect()
+      document.documentElement.style.removeProperty('--public-header-height')
+    }
+  }, [])
+
   return (
     <div className="flex min-h-screen flex-col">
       <ScrollManager />
       <ScrollRestoration />
       <Navbar />
-      <main id="main" className="flex-1 pt-[var(--nav-h)]">
+      <main id="main" className="flex-1" style={{ paddingTop: 'var(--public-header-height, var(--nav-h))' }}>
         <Outlet />
       </main>
-      <Footer />
+      <SiteFooter />
       <ToastViewport />
     </div>
   )

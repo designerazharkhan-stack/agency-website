@@ -17,30 +17,55 @@ export function useReveal(options?: {
 
   useEffect(() => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const elements = Array.from(document.querySelectorAll<HTMLElement>('.reveal'))
+    const observed = new WeakSet<Element>()
 
-    if (reduceMotion || !('IntersectionObserver' in window)) {
-      elements.forEach((element) => element.classList.add('is-in'))
-      return
+    const observer = reduceMotion || !('IntersectionObserver' in window)
+      ? null
+      : new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) {
+                if (!once) entry.target.classList.remove('is-in')
+                return
+              }
+              const element = entry.target as HTMLElement
+              const index = Number(element.dataset.revealIndex ?? '0')
+              window.setTimeout(() => element.classList.add('is-in'), index * stagger)
+              if (once) observer?.unobserve(element)
+            })
+          },
+          { threshold, rootMargin: '0px 0px -8% 0px' },
+        )
+
+    const observeIn = (root: ParentNode, direct?: Element) => {
+      const elements = [
+        ...(direct?.matches('.reveal') ? [direct as HTMLElement] : []),
+        ...Array.from(root.querySelectorAll<HTMLElement>('.reveal')),
+      ]
+      for (const element of elements) {
+        if (observed.has(element)) continue
+        observed.add(element)
+        if (observer) observer.observe(element)
+        else element.classList.add('is-in')
+      }
     }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) {
-            if (!once) entry.target.classList.remove('is-in')
-            return
-          }
-          const element = entry.target as HTMLElement
-          const index = Number(element.dataset.revealIndex ?? '0')
-          window.setTimeout(() => element.classList.add('is-in'), index * stagger)
-          if (once) observer.unobserve(element)
-        })
-      },
-      { threshold, rootMargin: '0px 0px -8% 0px' },
-    )
+    observeIn(document)
 
-    elements.forEach((element) => observer.observe(element))
-    return () => observer.disconnect()
+    // Page content is often added after its initial render when Firestore resolves.
+    // Observe new reveal cards too; otherwise their opacity transition leaves blank card-sized gaps.
+    const mutations = new MutationObserver((records) => {
+      records.forEach((record) => {
+        record.addedNodes.forEach((node) => {
+          if (node instanceof Element) observeIn(node, node)
+        })
+      })
+    })
+    mutations.observe(document.body, { childList: true, subtree: true })
+
+    return () => {
+      mutations.disconnect()
+      observer?.disconnect()
+    }
   }, [stagger, once, threshold])
 }

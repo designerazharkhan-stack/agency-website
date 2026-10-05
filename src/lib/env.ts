@@ -55,8 +55,8 @@ export const firebaseEnvMissing: string[] = [
 ].filter((key) => !raw(key as keyof ImportMetaEnv))
 
 /** Absolute URL helper used by the SEO manager. */
-export function absoluteUrl(path = '/'): string {
-  const base = siteEnv.siteUrl.replace(/\/$/, '')
+export function absoluteUrl(path = '/', siteUrl = siteEnv.siteUrl): string {
+  const base = siteUrl.replace(/\/$/, '')
   const suffix = path.startsWith('/') ? path : `/${path}`
   return `${base}${suffix}`
 }

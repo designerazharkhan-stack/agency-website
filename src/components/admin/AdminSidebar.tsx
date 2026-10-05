@@ -7,7 +7,6 @@ import {
   Inbox,
   LayoutList,
   MessagesSquare,
-  Search,
   Settings2,
   Sparkles,
   Star,
@@ -38,7 +37,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
     icon: Gauge,
     end: true,
   },
-  { to: '/admin/dashboard/settings', label: 'Site settings', description: 'Brand, logo, contact and socials', icon: Settings2 },
+  { to: '/admin/dashboard/shared-zone', label: 'Shared Zone', description: 'Brand, contact, CTA, trust, footer and SEO', icon: Settings2 },
   { to: '/admin/dashboard/homepage', label: 'Homepage', description: 'Hero, statistics, process and features', icon: Home },
   { to: '/admin/dashboard/services', label: 'Services', description: 'Create, edit and publish services', icon: LayoutList },
   { to: '/admin/dashboard/portfolio', label: 'Portfolio', description: 'Projects, galleries and case studies', icon: FolderKanban },
@@ -46,7 +45,6 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { to: '/admin/dashboard/testimonials', label: 'Testimonials', description: 'Client quotes and ratings', icon: Star },
   { to: '/admin/dashboard/pricing', label: 'Pricing', description: 'Plans, features and featured plan', icon: Wallet },
   { to: '/admin/dashboard/messages', label: 'Messages', description: 'Contact form submissions', icon: Inbox },
-  { to: '/admin/dashboard/seo', label: 'SEO', description: 'Titles, descriptions and social cards', icon: Search },
 ]
 
 export function findAdminNavItem(pathname: string): AdminNavItem | undefined {

@@ -4,6 +4,7 @@ import { ArrowDown, ArrowUpRight, Sparkles } from 'lucide-react'
 
 import { LinkButton } from '@/components/ui/Button'
 import { Container, Eyebrow, Orb } from '@/components/ui/Section'
+import { TrustStats } from '@/components/shared-zone/SharedZoneComponents'
 import { useSiteContent } from '@/context/ContentContext'
 import type { HeroSettings } from '@/types/content'
 
@@ -156,24 +157,7 @@ export function Hero({ hero }: { hero: HeroSettings }) {
         </div>
 
         {/* Stats */}
-        {hero.stats?.length ? (
-          <motion.dl
-            className="mt-20 grid grid-cols-2 gap-x-6 gap-y-10 border-t border-white/[0.07] pt-10 sm:mt-24 lg:grid-cols-4"
-            initial={{ opacity: 0, y: 26 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.66, ease: [0.22, 1, 0.36, 1] }}
-          >
-            {hero.stats.map((stat) => (
-              <div key={stat.id} className="flex flex-col gap-2">
-                <dt className="sr-only">{stat.label}</dt>
-                <dd className="gold-text font-display text-4xl font-light leading-none sm:text-5xl">
-                  {stat.value}
-                </dd>
-                <p className="text-[0.66rem] uppercase tracking-wide2 text-bone-dim">{stat.label}</p>
-              </div>
-            ))}
-          </motion.dl>
-        ) : null}
+        <TrustStats compact />
       </Container>
 
       {/* Scroll cue */}

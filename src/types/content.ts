@@ -113,6 +113,53 @@ export interface ThemeSettings {
   showBlog?: boolean
 }
 
+export interface SharedZoneBrand extends BrandSettings {
+  faviconUrl?: string
+  primaryColor: string
+  secondaryColor: string
+  accentColor: string
+}
+
+export interface SharedZone {
+  brand: SharedZoneBrand
+  theme: ThemeSettings
+  announcement: {
+    enabled: boolean
+    text: string
+    href: string
+    buttonText: string
+  }
+  contact: ContactSettings & { businessHours: string[] }
+  socials: SocialLink[]
+  trust: {
+    clientCount: string
+    projectsCount: string
+    experienceYears: string
+    rating: string
+    stats: Array<{ id: string; value: string; label: string }>
+    badges: string[]
+    certifications: string[]
+    awards: string[]
+  }
+  cta: CtaSettings
+  footer: {
+    tagline: string
+    quickLinks: NavItem[]
+    serviceLinks: NavItem[]
+    offices: Array<{ id: string; city: string; address: string; phone?: string }>
+    legalNote?: string
+    copyrightText: string
+    newsletter: {
+      enabled: boolean
+      heading: string
+      description: string
+      buttonText: string
+      href: string
+    }
+  }
+  seo: SeoSettings
+}
+
 /* -------------------------------------------------------------------------- */
 /*  Collections                                                               */
 /* -------------------------------------------------------------------------- */
@@ -274,6 +321,8 @@ export interface SiteContent {
   seo: SeoSettings
   theme: ThemeSettings
   navigation: NavItem[]
+  /** Canonical site-wide content, projected into the legacy page settings above. */
+  sharedZone?: SharedZone
   footer: {
     tagline: string
     offices: Array<{ id: string; city: string; address: string; phone?: string }>

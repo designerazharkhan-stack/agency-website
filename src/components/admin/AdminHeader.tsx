@@ -9,7 +9,13 @@ import { firebaseEnvMissing, isFirebaseConfigured } from '@/lib/env'
 import { cn } from '@/lib/utils'
 import { ADMIN_NAV, findAdminNavItem } from './AdminSidebar'
 
-export function AdminHeader({ onOpenSidebar }: { onOpenSidebar: () => void }) {
+export function AdminHeader({
+  onOpenSidebar,
+  sidebarOpen,
+}: {
+  onOpenSidebar: () => void
+  sidebarOpen: boolean
+}) {
   const { pathname } = useLocation()
   const { identity, signOut, refresh } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -41,7 +47,8 @@ export function AdminHeader({ onOpenSidebar }: { onOpenSidebar: () => void }) {
           onClick={onOpenSidebar}
           className="btn-ghost !px-3 !py-2.5 lg:hidden"
           aria-label="Open dashboard navigation"
-          aria-expanded={false}
+          aria-expanded={sidebarOpen}
+          aria-controls="admin-navigation-mobile"
         >
           <Menu className="h-4 w-4" aria-hidden="true" />
         </button>

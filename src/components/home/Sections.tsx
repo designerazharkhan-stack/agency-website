@@ -14,7 +14,7 @@ export function ServicesSection({ services }: { services: ServiceDoc[] }) {
   if (!services.length) return null
 
   return (
-    <Section id="services" className="relative">
+    <Section id="services" className="relative overflow-hidden">
       <div
         className="pointer-events-none absolute left-1/2 top-0 -z-10 h-96 w-[52rem] -translate-x-1/2 rounded-full bg-gold-500/[0.05] blur-[140px]"
         aria-hidden="true"

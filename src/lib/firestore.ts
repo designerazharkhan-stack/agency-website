@@ -44,6 +44,7 @@ export const SETTINGS_DOCS = {
   theme: 'theme',
   navigation: 'navigation',
   footer: 'footer',
+  sharedZone: 'sharedZone',
 } as const
 
 export type SettingsDocKey = keyof typeof SETTINGS_DOCS

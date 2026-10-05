@@ -59,6 +59,7 @@ export function AdminLayout() {
               onClick={() => setDrawerOpen(false)}
             />
             <motion.div
+              id="admin-navigation-mobile"
               role="dialog"
               aria-modal="true"
               aria-label="Dashboard navigation"
@@ -75,7 +76,7 @@ export function AdminLayout() {
       </AnimatePresence>
 
       <div className="lg:pl-[17.5rem]">
-        <AdminHeader onOpenSidebar={() => setDrawerOpen(true)} />
+        <AdminHeader onOpenSidebar={() => setDrawerOpen(true)} sidebarOpen={drawerOpen} />
         <main id="admin-main" className="px-4 py-6 sm:px-6 sm:py-8">
           <div className="mx-auto max-w-6xl">
             <Outlet />

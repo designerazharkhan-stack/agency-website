@@ -17,8 +17,8 @@ admin sign-in, and image uploads.
 
 ```text
 src/
-  components/     Shared public, home, UI and admin components
-  context/        Site-content and authentication providers
+  components/     Shared public, home, UI, admin and shared-zone components
+  context/        Site-content, Shared Zone and authentication providers
   data/defaults/  Demo content and Firestore seed content
   hooks/          Async, scroll, toast and admin data hooks
   lib/            Firebase adapters, validation, SEO and shared utilities
@@ -118,6 +118,16 @@ admins can edit site settings and homepage sections, manage services, and use
 the dashboard's content tools. The bundled defaults can be seeded to Firestore
 from the overview screen; seed access is restricted by the same admin rules as
 all other writes.
+
+The dashboard's **Shared Zone** (`/admin/dashboard/shared-zone`) is the
+canonical site-wide configuration. It stores brand colors and artwork,
+announcements, contact details and business hours, social links, trust metrics,
+the global CTA, footer links and newsletter promotion, and default SEO metadata
+in one `settings/sharedZone` Firestore document. Public UI components consume
+that shared provider so changes propagate to the navigation, homepage, contact
+page, SEO metadata and footer. Older `/admin/dashboard/settings` and
+`/admin/dashboard/seo` URLs redirect to the corresponding Shared Zone editor
+sections; existing legacy setting documents are used as migration fallbacks.
 
 ## Production build and Firebase Hosting
 

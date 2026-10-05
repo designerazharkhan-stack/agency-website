@@ -340,6 +340,7 @@ export function RepeaterField<T extends { id: string }>({
                 const input = (
                   <Input
                     key={field.key}
+                    label={field.label}
                     value={current}
                     onChange={(event) => update(index, { [field.key]: event.target.value } as Partial<T>)}
                     placeholder={field.placeholder}
@@ -350,6 +351,7 @@ export function RepeaterField<T extends { id: string }>({
                   return (
                     <div key={field.key} className="sm:col-span-2">
                       <Textarea
+                        label={field.label}
                         value={current}
                         onChange={(event) => update(index, { [field.key]: event.target.value } as Partial<T>)}
                         placeholder={field.placeholder}

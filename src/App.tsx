@@ -4,7 +4,8 @@ import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { NotFoundPage, RouteFallback } from '@/components/common/NotFoundPage'
 import { PublicLayout } from '@/components/layout/PublicLayout'
-import { ContentProvider, useSiteContent } from '@/context/ContentContext'
+import { ContentProvider } from '@/context/ContentContext'
+import { SharedZoneProvider, useSharedZone } from '@/context/SharedZoneContext'
 
 const HomePage = lazy(() => import('@/pages/public/HomePage'))
 const AboutPage = lazy(() => import('@/pages/public/AboutPage'))
@@ -26,7 +27,7 @@ const AdminRoutes = lazy(() => import('@/components/admin/AdminRoutes'))
 const AdminDashboardRoute = lazy(() => import('@/components/admin/AdminDashboardRoute'))
 const AdminLoginPage = lazy(() => import('@/pages/admin/AdminLoginPage'))
 const DashboardOverviewPage = lazy(() => import('@/pages/admin/DashboardOverviewPage'))
-const SiteSettingsPage = lazy(() => import('@/pages/admin/SiteSettingsPage'))
+const SharedZoneAdminPage = lazy(() => import('@/pages/admin/SharedZoneAdminPage'))
 const HomepageEditorPage = lazy(() => import('@/pages/admin/HomepageEditorPage'))
 const ServicesAdminPage = lazy(() => import('@/pages/admin/ServicesAdminPage'))
 const PortfolioAdminPage = lazy(() =>
@@ -43,9 +44,6 @@ const PricingAdminPage = lazy(() =>
 )
 const MessagesAdminPage = lazy(() =>
   import('@/pages/admin/ContentAdminPages').then((module) => ({ default: module.MessagesAdminPage })),
-)
-const SeoAdminPage = lazy(() =>
-  import('@/pages/admin/ContentAdminPages').then((module) => ({ default: module.SeoAdminPage })),
 )
 
 function SuspendedPage({ children, label }: { children: ReactNode; label: string }) {
@@ -98,7 +96,8 @@ const router = createBrowserRouter([
         ),
         children: [
           { index: true, element: <SuspendedPage label="Loading overview"><DashboardOverviewPage /></SuspendedPage> },
-          { path: 'settings', element: <SuspendedPage label="Loading settings"><SiteSettingsPage /></SuspendedPage> },
+          { path: 'shared-zone', element: <SuspendedPage label="Loading Shared Zone"><SharedZoneAdminPage /></SuspendedPage> },
+          { path: 'settings', element: <Navigate to="/admin/dashboard/shared-zone" replace /> },
           { path: 'homepage', element: <SuspendedPage label="Loading homepage editor"><HomepageEditorPage /></SuspendedPage> },
           { path: 'services', element: <SuspendedPage label="Loading services editor"><ServicesAdminPage /></SuspendedPage> },
           { path: 'portfolio', element: <SuspendedPage label="Loading portfolio editor"><PortfolioAdminPage /></SuspendedPage> },
@@ -106,7 +105,7 @@ const router = createBrowserRouter([
           { path: 'testimonials', element: <SuspendedPage label="Loading testimonials editor"><TestimonialsAdminPage /></SuspendedPage> },
           { path: 'pricing', element: <SuspendedPage label="Loading pricing editor"><PricingAdminPage /></SuspendedPage> },
           { path: 'messages', element: <SuspendedPage label="Loading inbox"><MessagesAdminPage /></SuspendedPage> },
-          { path: 'seo', element: <SuspendedPage label="Loading SEO settings"><SeoAdminPage /></SuspendedPage> },
+          { path: 'seo', element: <Navigate to="/admin/dashboard/shared-zone#seo" replace /> },
           { path: '*', element: <NotFoundPage /> },
         ],
       },
@@ -117,12 +116,12 @@ const router = createBrowserRouter([
 ])
 
 function SiteFavicon() {
-  const site = useSiteContent()
+  const sharedZone = useSharedZone()
 
   useEffect(() => {
     const favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
-    if (favicon) favicon.href = site.brand.logoMarkUrl || '/favicon.svg'
-  }, [site.brand.logoMarkUrl])
+    if (favicon) favicon.href = sharedZone.brand.faviconUrl || sharedZone.brand.logoMarkUrl || '/favicon.svg'
+  }, [sharedZone.brand.faviconUrl, sharedZone.brand.logoMarkUrl])
 
   return null
 }
@@ -130,10 +129,12 @@ function SiteFavicon() {
 export function App() {
   return (
     <ContentProvider>
-      <SiteFavicon />
-      <ErrorBoundary>
-        <RouterProvider router={router} />
-      </ErrorBoundary>
+      <SharedZoneProvider>
+        <SiteFavicon />
+        <ErrorBoundary>
+          <RouterProvider router={router} />
+        </ErrorBoundary>
+      </SharedZoneProvider>
     </ContentProvider>
   )
 }

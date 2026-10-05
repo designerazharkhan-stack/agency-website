@@ -7,7 +7,9 @@ import type {
   StatDoc,
   TeamMemberDoc,
   ValuePropDoc,
+  SharedZone,
 } from '@/types/content'
+import { defaultServices } from './services'
 
 const img = (id: string, w = 1400) =>
   `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=80`
@@ -473,3 +475,61 @@ export const defaultFaqs: FaqDoc[] = [
     order: 8,
   },
 ]
+
+export const defaultSharedZone: SharedZone = {
+  brand: {
+    ...defaultSite.brand,
+    faviconUrl: defaultSite.brand.logoMarkUrl,
+    primaryColor: '#050505',
+    secondaryColor: '#16161A',
+    accentColor: '#C29A3C',
+  },
+  theme: defaultSite.theme,
+  announcement: {
+    enabled: false,
+    text: '',
+    href: '/contact',
+    buttonText: 'Learn more',
+  },
+  contact: {
+    ...defaultSite.contact,
+    businessHours: ['Monday–Friday, 9:00am–5:00pm Pacific'],
+  },
+  socials: defaultSite.socials,
+  trust: {
+    clientCount: '',
+    projectsCount: '120+',
+    experienceYears: '11',
+    rating: '4.9/5',
+    stats: [{ id: 'stat-returning', value: '94%', label: 'Clients who return' }],
+    badges: ['Senior-led teams', 'Fixed scope', 'You own the work'],
+    certifications: [],
+    awards: defaultAwards.map((award) => `${award.title} — ${award.organisation} (${award.year})`),
+  },
+  cta: defaultSite.cta,
+  footer: {
+    ...defaultSite.footer,
+    quickLinks: [
+      { label: 'Work', href: '/portfolio' },
+      { label: 'Services', href: '/services' },
+      { label: 'Studio', href: '/about' },
+      { label: 'Journal', href: '/blog' },
+      { label: 'Pricing', href: '/pricing' },
+      { label: 'Testimonials', href: '/testimonials' },
+      { label: 'Contact', href: '/contact' },
+    ],
+    serviceLinks: defaultServices.slice(0, 6).map((service) => ({
+      label: service.shortTitle ?? service.title,
+      href: `/services#${service.slug}`,
+    })),
+    copyrightText: 'All rights reserved.',
+    newsletter: {
+      enabled: false,
+      heading: 'Notes from the studio',
+      description: 'Occasional thinking on brand, digital and the work between them.',
+      buttonText: 'Get in touch',
+      href: '/contact',
+    },
+  },
+  seo: defaultSite.seo,
+}
