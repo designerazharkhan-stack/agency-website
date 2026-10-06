@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { defaultSharedZone } from '@/data/defaults'
 import { firebaseReady } from '@/lib/firebase'
-import { readSharedZoneForAdmin, saveSharedZone, subscribeToSharedZone } from '@/lib/content'
+import { readSharedZoneAdminState, saveSharedZone } from '@/lib/content'
 import type { SharedZone } from '@/types/content'
 
 export function useAdminSharedZone() {
@@ -10,6 +10,7 @@ export function useAdminSharedZone() {
   const [saved, setSaved] = useState<SharedZone>(defaultSharedZone)
   const [loading, setLoading] = useState(firebaseReady)
   const [saving, setSaving] = useState(false)
+  const [documentExists, setDocumentExists] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -18,20 +19,24 @@ export function useAdminSharedZone() {
       return
     }
 
-    setLoading(true)
-    const unsubscribe = subscribeToSharedZone(
-      (next) => {
-        setValue(next)
-        setSaved(next)
+    let active = true
+    void readSharedZoneAdminState().then((state) => {
+      if (active) {
+        setValue(state.value)
+        setSaved(state.value)
+        setDocumentExists(state.documentExists)
         setLoading(false)
         setError(null)
-      },
-      (nextError) => {
-        setError(nextError.message)
+      }
+    }).catch((loadError: unknown) => {
+      if (active) {
+        setError(loadError instanceof Error ? loadError.message : 'Could not load Site Settings.')
         setLoading(false)
-      },
-    )
-    return unsubscribe
+      }
+    })
+    return () => {
+      active = false
+    }
   }, [])
 
   const update = useCallback(<K extends keyof SharedZone>(
@@ -45,12 +50,16 @@ export function useAdminSharedZone() {
   }, [])
 
   const save = useCallback(async () => {
+    const submitted = value
+    if (JSON.stringify(submitted) === JSON.stringify(saved)) return submitted
+
     setSaving(true)
     setError(null)
     try {
-      await saveSharedZone(value)
-      setSaved(value)
-      return await readSharedZoneForAdmin()
+      await saveSharedZone(submitted, saved, documentExists)
+      setSaved(submitted)
+      setDocumentExists(true)
+      return submitted
     } catch (saveError) {
       const message = saveError instanceof Error ? saveError.message : 'Could not save Shared Zone settings.'
       setError(message)
@@ -58,7 +67,7 @@ export function useAdminSharedZone() {
     } finally {
       setSaving(false)
     }
-  }, [value])
+  }, [value, saved, documentExists])
 
   const reset = useCallback(() => setValue(saved), [saved])
   const dirty = useMemo(() => JSON.stringify(value) !== JSON.stringify(saved), [value, saved])

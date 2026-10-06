@@ -81,7 +81,7 @@ function LinkListEditor({
 
 export default function SharedZoneAdminPage() {
   const editor = useAdminSharedZone()
-  const { reload } = useSite()
+  const { updateSharedZone } = useSite()
   const [validationError, setValidationError] = useState<string | null>(null)
   const { hash } = useLocation()
 
@@ -119,8 +119,7 @@ export default function SharedZoneAdminPage() {
 
     try {
       const saved = await editor.save()
-      editor.setValue(saved)
-      await reload()
+      updateSharedZone(saved)
       toast.success('Shared Zone saved', 'Your site-wide settings are now updated everywhere.')
     } catch (error) {
       toast.error('Could not save Shared Zone', error instanceof Error ? error.message : 'Unknown error.')
@@ -144,8 +143,8 @@ export default function SharedZoneAdminPage() {
           <Button variant="quiet" onClick={editor.reset} disabled={!editor.dirty} icon={<RotateCcw className="h-4 w-4" />}>
             Discard
           </Button>
-          <Button onClick={() => void save()} loading={editor.saving} disabled={!editor.dirty} icon={<Save className="h-4 w-4" />}>
-            {editor.dirty ? 'Save Shared Zone' : 'All saved'}
+          <Button onClick={() => void save()} loading={editor.saving} disabled={!editor.dirty || editor.saving} icon={<Save className="h-4 w-4" />}>
+            {editor.saving ? 'Saving…' : editor.dirty ? 'Save Shared Zone' : 'All saved'}
           </Button>
         </div>
       </header>

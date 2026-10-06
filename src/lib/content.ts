@@ -10,6 +10,7 @@
 
 import {
   addDoc,
+  deleteField,
   deleteDoc,
   doc,
   getDoc,
@@ -276,6 +277,32 @@ export const readTheme = () => readSetting('theme')
 export const readNavigation = () => readSetting('navigation')
 export const readFooter = () => readSetting('footer')
 
+export function applySharedZoneToSite(site: SiteContent, sharedZone: SharedZone): SiteContent {
+  return {
+    ...site,
+    brand: sharedZone.brand,
+    hero: {
+      ...site.hero,
+      stats: [
+        { id: 'shared-projects', value: sharedZone.trust.projectsCount, label: 'Projects delivered' },
+        { id: 'shared-years', value: sharedZone.trust.experienceYears, label: 'Years of experience' },
+        { id: 'shared-rating', value: sharedZone.trust.rating, label: 'Average rating' },
+        ...(sharedZone.trust.clientCount
+          ? [{ id: 'shared-clients', value: sharedZone.trust.clientCount, label: 'Clients' }]
+          : []),
+        ...sharedZone.trust.stats,
+      ].filter((stat) => stat.value.trim()),
+    },
+    cta: sharedZone.cta,
+    contact: sharedZone.contact,
+    socials: sharedZone.socials,
+    seo: sharedZone.seo,
+    theme: sharedZone.theme,
+    footer: sharedZone.footer,
+    sharedZone,
+  }
+}
+
 /** Loads the canonical settings document, retaining legacy settings migration support. */
 export async function readSiteContent(): Promise<SiteContent> {
   const [savedSharedZone, hero, navigation] = await Promise.all([
@@ -286,30 +313,11 @@ export async function readSiteContent(): Promise<SiteContent> {
   if (savedSharedZone) {
     const sharedZone = mergeDefaults(defaultSharedZone, savedSharedZone)
 
-    return {
+    return applySharedZoneToSite({
       ...defaultSite,
-      brand: sharedZone.brand,
-      hero: {
-        ...hero,
-        stats: [
-          { id: 'shared-projects', value: sharedZone.trust.projectsCount, label: 'Projects delivered' },
-          { id: 'shared-years', value: sharedZone.trust.experienceYears, label: 'Years of experience' },
-          { id: 'shared-rating', value: sharedZone.trust.rating, label: 'Average rating' },
-          ...(sharedZone.trust.clientCount
-            ? [{ id: 'shared-clients', value: sharedZone.trust.clientCount, label: 'Clients' }]
-            : []),
-          ...sharedZone.trust.stats,
-        ].filter((stat) => stat.value.trim()),
-      },
-      cta: sharedZone.cta,
-      contact: sharedZone.contact,
-      socials: sharedZone.socials,
-      seo: sharedZone.seo,
-      theme: sharedZone.theme,
+      hero,
       navigation,
-      footer: sharedZone.footer,
-      sharedZone,
-    }
+    }, sharedZone)
   }
 
   const [brand, cta, contact, socials, seo, theme, footer] = await Promise.all([
@@ -350,29 +358,7 @@ export async function readSiteContent(): Promise<SiteContent> {
     }),
     savedSharedZone,
   )
-  return {
-    ...legacySite,
-    brand: sharedZone.brand,
-    hero: {
-      ...hero,
-      stats: [
-        { id: 'shared-projects', value: sharedZone.trust.projectsCount, label: 'Projects delivered' },
-        { id: 'shared-years', value: sharedZone.trust.experienceYears, label: 'Years of experience' },
-        { id: 'shared-rating', value: sharedZone.trust.rating, label: 'Average rating' },
-        ...(sharedZone.trust.clientCount
-          ? [{ id: 'shared-clients', value: sharedZone.trust.clientCount, label: 'Clients' }]
-          : []),
-        ...sharedZone.trust.stats,
-      ].filter((stat) => stat.value.trim()),
-    },
-    cta: sharedZone.cta,
-    theme: sharedZone.theme,
-    contact: sharedZone.contact,
-    socials: sharedZone.socials,
-    seo: sharedZone.seo,
-    footer: sharedZone.footer,
-    sharedZone,
-  }
+  return applySharedZoneToSite(legacySite, sharedZone)
 }
 
 /* -------------------------------------------------------------------------- */
@@ -394,16 +380,69 @@ async function readSharedZoneDocument(): Promise<Partial<SharedZone> | null> {
 }
 
 export async function readSharedZoneForAdmin(): Promise<SharedZone> {
-  const saved = await readSharedZoneDocument()
-  if (saved) return mergeDefaults(defaultSharedZone, saved)
-  const currentSite = await readSiteContent()
-  return currentSite.sharedZone ?? defaultSharedZone
+  return (await readSharedZoneAdminState()).value
 }
 
-export async function saveSharedZone(value: SharedZone): Promise<void> {
+export interface SharedZoneAdminState {
+  value: SharedZone
+  documentExists: boolean
+}
+
+export async function readSharedZoneAdminState(): Promise<SharedZoneAdminState> {
+  if (!firebaseReady) return { value: defaultSharedZone, documentExists: false }
+  try {
+    const db = await getDb()
+    const snapshot = await getDoc(settingsRef(db, 'sharedZone'))
+    if (snapshot.exists()) {
+      return {
+        value: mergeDefaults(defaultSharedZone, cleanDoc<Partial<SharedZone>>(snapshot.id, snapshot.data())),
+        documentExists: true,
+      }
+    }
+    const currentSite = await readSiteContent()
+    return { value: currentSite.sharedZone ?? defaultSharedZone, documentExists: false }
+  } catch (error) {
+    throw new ContentError(toMessage(error), error)
+  }
+}
+
+export async function saveSharedZone(
+  value: SharedZone,
+  previous: SharedZone,
+  documentExists: boolean,
+): Promise<void> {
   assertFirebaseConfigured()
   try {
     const db = await getDb()
+    const reference = settingsRef(db, 'sharedZone')
+    const changedFields: Record<string, unknown> = {}
+    const collectChanges = (before: unknown, after: unknown, path: string) => {
+      if (JSON.stringify(before) === JSON.stringify(after)) return
+      const beforeIsObject = before !== null && typeof before === 'object' && !Array.isArray(before)
+      const afterIsObject = after !== null && typeof after === 'object' && !Array.isArray(after)
+      if (beforeIsObject && afterIsObject) {
+        const beforeRecord = before as Record<string, unknown>
+        const afterRecord = after as Record<string, unknown>
+        const keys = new Set([...Object.keys(beforeRecord), ...Object.keys(afterRecord)])
+        keys.forEach((key) => {
+          const childPath = path ? `${path}.${key}` : key
+          if (!(key in afterRecord)) changedFields[childPath] = deleteField()
+          else collectChanges(beforeRecord[key], afterRecord[key], childPath)
+        })
+        return
+      }
+      if (path) changedFields[path] = after === undefined ? deleteField() : after
+    }
+    collectChanges(previous, value, '')
+
+    if (!Object.keys(changedFields).length) return
+
+    if (documentExists) {
+      changedFields.updatedAt = serverTimestamp()
+      await updateDoc(reference, changedFields)
+      return
+    }
+
     const compact = (input: unknown): unknown => {
       if (Array.isArray(input)) return input.map(compact)
       if (input && typeof input === 'object') {
@@ -419,48 +458,9 @@ export async function saveSharedZone(value: SharedZone): Promise<void> {
     }
     const payload: Record<string, unknown> = Object.fromEntries(Object.entries(compactValue))
     payload.updatedAt = serverTimestamp()
-    await setDoc(settingsRef(db, 'sharedZone'), payload, { merge: true })
+    await setDoc(reference, payload, { merge: true })
   } catch (error) {
     throw new ContentError(toMessage(error), error)
-  }
-}
-
-export function subscribeToSharedZone(
-  onData: (value: SharedZone) => void,
-  onError: (error: Error) => void,
-): () => void {
-  let cancelled = false
-  let unsubscribe: (() => void) | null = null
-
-  const run = async () => {
-    try {
-      assertFirebaseConfigured()
-      const db = await getDb()
-      if (cancelled) return
-      unsubscribe = onSnapshot(
-        settingsRef(db, 'sharedZone'),
-        (snapshot) => {
-          if (snapshot.exists()) {
-            onData(mergeDefaults(defaultSharedZone, cleanDoc<Partial<SharedZone>>(snapshot.id, snapshot.data())))
-            return
-          }
-          void readSharedZoneForAdmin().then((value) => {
-            if (!cancelled) onData(value)
-          }).catch((error: unknown) => {
-            onError(error instanceof Error ? error : new ContentError(toMessage(error), error))
-          })
-        },
-        (error) => onError(new ContentError(toMessage(error), error)),
-      )
-    } catch (error) {
-      onError(error instanceof Error ? error : new ContentError(toMessage(error), error))
-    }
-  }
-
-  void run()
-  return () => {
-    cancelled = true
-    unsubscribe?.()
   }
 }
 
@@ -520,7 +520,7 @@ export async function saveSetting<K extends SettingsKey>(key: K, value: SiteCont
     } else if (key === 'footer') {
       next = { ...current, footer: { ...current.footer, ...(value as SiteContent['footer']) } }
     }
-    if (next) await saveSharedZone(next)
+    if (next) await saveSharedZone(next, current, true)
   } catch (error) {
     throw new ContentError(toMessage(error), error)
   }
