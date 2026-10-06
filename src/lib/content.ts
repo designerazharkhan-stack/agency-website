@@ -124,24 +124,38 @@ function toMessage(error: unknown): string {
 /*  Generic collection read                                                   */
 /* -------------------------------------------------------------------------- */
 
-async function readCollection<T extends { id: string }>(
+const publicCollectionRequests = new Map<string, Promise<unknown[]>>()
+
+function readCollection<T extends { id: string }>(
   key: WritableCollection,
   fallbacks: T[],
   publishedOnly = true,
 ): Promise<T[]> {
-  if (!firebaseReady) return fallbacks
-  try {
-    const db = await getDb()
+  if (!firebaseReady) return Promise.resolve(fallbacks)
+
+  const requestKey = `${key}:${publishedOnly}`
+  let request = publicCollectionRequests.get(requestKey)
+  if (!request) {
     const constraints: QueryConstraint[] = []
     if (publishedOnly) constraints.push(where('published', '==', true))
     constraints.push(orderBy('order', 'asc'))
-    const snapshot = await getDocs(query(collectionRef(db, key), ...constraints))
-    if (snapshot.empty) return fallbacks
-    return snapshot.docs.map((docSnap) => cleanDoc<T>(docSnap.id, docSnap.data()))
-  } catch (error) {
-    console.warn(`[content] Falling back to defaults for "${key}":`, toMessage(error))
-    return fallbacks
+    request = (async () => {
+      const db = await getDb()
+      const snapshot = await getDocs(query(collectionRef(db, key), ...constraints))
+      return snapshot.docs.map((docSnap) => cleanDoc<T>(docSnap.id, docSnap.data()))
+    })().catch((error: unknown) => {
+      console.warn(`[content] Falling back to defaults for "${key}":`, toMessage(error))
+      return fallbacks
+    })
+    publicCollectionRequests.set(requestKey, request)
+    void request.then(() => {
+      if (publicCollectionRequests.get(requestKey) === request) {
+        publicCollectionRequests.delete(requestKey)
+      }
+    })
   }
+
+  return request.then((items) => (items.length ? items as T[] : fallbacks))
 }
 
 /* -------------------------------------------------------------------------- */
@@ -264,9 +278,12 @@ export const readFooter = () => readSetting('footer')
 
 /** Loads the canonical settings document, retaining legacy settings migration support. */
 export async function readSiteContent(): Promise<SiteContent> {
-  const savedSharedZone = await readSharedZoneDocument()
+  const [savedSharedZone, hero, navigation] = await Promise.all([
+    readSharedZoneDocument(),
+    readHero(),
+    readNavigation(),
+  ])
   if (savedSharedZone) {
-    const [hero, navigation] = await Promise.all([readHero(), readNavigation()])
     const sharedZone = mergeDefaults(defaultSharedZone, savedSharedZone)
 
     return {
@@ -295,15 +312,13 @@ export async function readSiteContent(): Promise<SiteContent> {
     }
   }
 
-  const [brand, hero, cta, contact, socials, seo, theme, navigation, footer] = await Promise.all([
+  const [brand, cta, contact, socials, seo, theme, footer] = await Promise.all([
     readBrand(),
-    readHero(),
     readCta(),
     readContact(),
     readSocials(),
     readSeo(),
     readTheme(),
-    readNavigation(),
     readFooter(),
   ])
   const legacySite = { brand, hero, cta, contact, socials, seo, theme, navigation, footer }

@@ -1,5 +1,15 @@
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 
+import {
+  defaultClients,
+  defaultPlans,
+  defaultPosts,
+  defaultProcess,
+  defaultProjects,
+  defaultServices,
+  defaultTestimonials,
+  defaultValues,
+} from '@/data/defaults'
 import { CapabilityMarquee, Hero } from '@/components/home/Hero'
 import { ClientStrip, FeaturedWorkSection, ServicesSection } from '@/components/home/Sections'
 import {
@@ -11,7 +21,6 @@ import {
   WhyUsSection,
 } from '@/components/home/Blocks'
 import { useSiteContent } from '@/context/ContentContext'
-import { useAsync } from '@/hooks/useAsync'
 import { useReveal } from '@/hooks/useReveal'
 import {
   getClients,
@@ -25,41 +34,48 @@ import {
 } from '@/lib/content'
 import { useSeo } from '@/lib/seo'
 
+const initialHomeContent = {
+  services: defaultServices,
+  projects: defaultProjects,
+  values: defaultValues,
+  steps: defaultProcess,
+  testimonials: defaultTestimonials,
+  plans: defaultPlans,
+  posts: defaultPosts,
+  clients: defaultClients,
+}
+
 export default function HomePage() {
   const site = useSiteContent()
   useReveal()
+  const [content, setContent] = useState(initialHomeContent)
 
-  const { data } = useAsync(
-    async () => {
-      const [services, projects, values, steps, testimonials, plans, posts, clients] =
-        await Promise.all([
-          getServices(),
-          getProjects(),
-          getValues(),
-          getProcessSteps(),
-          getTestimonials(),
-          getPlans(),
-          getPosts(),
-          getClients(),
-        ])
-      return { services, projects, values, steps, testimonials, plans, posts, clients }
-    },
-    [],
-  )
+  useEffect(() => {
+    let active = true
+    const load = <K extends keyof typeof initialHomeContent>(
+      key: K,
+      request: () => Promise<(typeof initialHomeContent)[K]>,
+    ) => {
+      void request().then((value) => {
+        if (active) setContent((current) => ({ ...current, [key]: value }))
+      }).catch((error: unknown) => {
+        console.error(`[home] Could not load "${key}" content; keeping bundled defaults.`, error)
+      })
+    }
 
-  const content = useMemo(
-    () => ({
-      services: data?.services ?? [],
-      projects: data?.projects ?? [],
-      values: data?.values ?? [],
-      steps: data?.steps ?? [],
-      testimonials: data?.testimonials ?? [],
-      plans: data?.plans ?? [],
-      posts: data?.posts ?? [],
-      clients: data?.clients ?? [],
-    }),
-    [data],
-  )
+    load('services', getServices)
+    load('projects', getProjects)
+    load('values', getValues)
+    load('steps', getProcessSteps)
+    load('testimonials', getTestimonials)
+    load('plans', getPlans)
+    load('posts', getPosts)
+    load('clients', getClients)
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   useSeo({
     title: site.seo?.title ?? site.brand.siteName,
