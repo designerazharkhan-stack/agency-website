@@ -37,7 +37,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
     icon: Gauge,
     end: true,
   },
-  { to: '/admin/dashboard/shared-zone', label: 'Shared Zone', description: 'Brand, contact, CTA, trust, footer and SEO', icon: Settings2 },
+  { to: '/admin/dashboard/shared-zone', label: 'Site Settings', description: 'Shared Zone: brand, contact, CTA and SEO', icon: Settings2 },
   { to: '/admin/dashboard/homepage', label: 'Homepage', description: 'Hero, statistics, process and features', icon: Home },
   { to: '/admin/dashboard/services', label: 'Services', description: 'Create, edit and publish services', icon: LayoutList },
   { to: '/admin/dashboard/portfolio', label: 'Portfolio', description: 'Projects, galleries and case studies', icon: FolderKanban },

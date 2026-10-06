@@ -119,8 +119,8 @@ the dashboard's content tools. The bundled defaults can be seeded to Firestore
 from the overview screen; seed access is restricted by the same admin rules as
 all other writes.
 
-The dashboard's **Shared Zone** (`/admin/dashboard/shared-zone`) is the
-canonical site-wide configuration. It stores brand colors and artwork,
+The dashboard's **Site Settings / Shared Zone** (`/admin/dashboard/shared-zone`)
+is the canonical site-wide configuration. It stores brand colors and artwork,
 announcements, contact details and business hours, social links, trust metrics,
 the global CTA, footer links and newsletter promotion, and default SEO metadata
 in one `settings/sharedZone` Firestore document. Public UI components consume

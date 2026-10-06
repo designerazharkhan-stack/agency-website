@@ -133,11 +133,11 @@ export default function SharedZoneAdminPage() {
     <div className="space-y-6">
       <header className="flex flex-col gap-4 rounded-2xl border border-gold-500/20 bg-gold-500/[0.035] p-5 sm:flex-row sm:items-end sm:justify-between sm:p-6">
         <div className="min-w-0">
-          <p className="eyebrow">One source of truth</p>
-          <h2 className="mt-3 font-display text-3xl font-light text-bone sm:text-4xl">Shared Zone</h2>
+          <p className="eyebrow">Shared Zone · One source of truth</p>
+          <h2 className="mt-3 font-display text-3xl font-light text-bone sm:text-4xl">Site Settings</h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-bone-dim">
-            Edit site-wide information once. The navbar, homepage, contact surfaces, SEO and footer all read from this
-            shared configuration.
+            Edit site-wide information once. The navbar, homepage, contact surfaces, SEO and footer all read from the
+            same shared configuration.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

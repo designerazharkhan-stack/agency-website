@@ -262,8 +262,39 @@ export const readTheme = () => readSetting('theme')
 export const readNavigation = () => readSetting('navigation')
 export const readFooter = () => readSetting('footer')
 
-/** Everything the public shell needs, in one round trip. */
+/** Loads the canonical settings document, retaining legacy settings migration support. */
 export async function readSiteContent(): Promise<SiteContent> {
+  const savedSharedZone = await readSharedZoneDocument()
+  if (savedSharedZone) {
+    const [hero, navigation] = await Promise.all([readHero(), readNavigation()])
+    const sharedZone = mergeDefaults(defaultSharedZone, savedSharedZone)
+
+    return {
+      ...defaultSite,
+      brand: sharedZone.brand,
+      hero: {
+        ...hero,
+        stats: [
+          { id: 'shared-projects', value: sharedZone.trust.projectsCount, label: 'Projects delivered' },
+          { id: 'shared-years', value: sharedZone.trust.experienceYears, label: 'Years of experience' },
+          { id: 'shared-rating', value: sharedZone.trust.rating, label: 'Average rating' },
+          ...(sharedZone.trust.clientCount
+            ? [{ id: 'shared-clients', value: sharedZone.trust.clientCount, label: 'Clients' }]
+            : []),
+          ...sharedZone.trust.stats,
+        ].filter((stat) => stat.value.trim()),
+      },
+      cta: sharedZone.cta,
+      contact: sharedZone.contact,
+      socials: sharedZone.socials,
+      seo: sharedZone.seo,
+      theme: sharedZone.theme,
+      navigation,
+      footer: sharedZone.footer,
+      sharedZone,
+    }
+  }
+
   const [brand, hero, cta, contact, socials, seo, theme, navigation, footer] = await Promise.all([
     readBrand(),
     readHero(),
@@ -276,7 +307,6 @@ export async function readSiteContent(): Promise<SiteContent> {
     readFooter(),
   ])
   const legacySite = { brand, hero, cta, contact, socials, seo, theme, navigation, footer }
-  const savedSharedZone = await readSharedZoneDocument()
   const statByLabel = (pattern: RegExp, fallback: string) =>
     hero.stats.find((stat) => pattern.test(stat.label))?.value ?? fallback
   const reservedStatLabels = /project|year|rating|clients?(?: served| count)?$/i

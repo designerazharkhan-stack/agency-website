@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Link, NavLink, useLocation } from 'react-router-dom'
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
 import { ArrowUpRight, Menu, Phone, X } from 'lucide-react'
 
 import { Button, LinkButton } from '@/components/ui/Button'
@@ -15,26 +15,22 @@ export function Navbar() {
   const sharedZone = useSharedZone()
   const scrolled = useScrolledPast(20)
   const [open, setOpen] = useState(false)
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
   const location = useLocation()
+  const closeMenu = useCallback(() => setOpen(false), [])
 
   useEffect(() => {
     setOpen(false)
   }, [location.pathname])
 
   useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : ''
+    if (!open) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
     return () => {
-      document.body.style.overflow = ''
+      document.body.style.overflow = previousOverflow
     }
   }, [open])
-
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false)
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [])
 
   const nav: NavItem[] = site.navigation?.length
     ? site.navigation
@@ -102,13 +98,16 @@ export function Navbar() {
           </nav>
 
           <div className="hidden items-center gap-2 lg:flex xl:gap-4">
-            <a
-              href={safeHref(sharedZone.contact.phone ? `tel:${sharedZone.contact.phone.replace(/[^\d+]/g, '')}` : 'tel:+14155550182')}
-              className="flex items-center gap-2 text-[0.72rem] uppercase tracking-wide2 text-bone-dim transition-colors hover:text-gold-200"
-            >
-              <Phone className="h-3.5 w-3.5" aria-hidden="true" />
-              <span className="hidden xl:inline">{sharedZone.contact.phone}</span>
-            </a>
+            {sharedZone.contact.phone ? (
+              <a
+                href={safeHref(`tel:${sharedZone.contact.phone.replace(/[^\d+]/g, '')}`)}
+                aria-label={`Call ${sharedZone.contact.phone}`}
+                className="flex items-center gap-2 text-[0.72rem] uppercase tracking-wide2 text-bone-dim transition-colors hover:text-gold-200"
+              >
+                <Phone className="h-3.5 w-3.5" aria-hidden="true" />
+                <span className="hidden xl:inline">{sharedZone.contact.phone}</span>
+              </a>
+            ) : null}
             <LinkButton
               to={sharedZone.cta.buttonHref || '/contact'}
               size="sm"
@@ -119,6 +118,7 @@ export function Navbar() {
           </div>
 
           <Button
+            ref={menuButtonRef}
             variant="quiet"
             className="!px-2 lg:hidden"
             onClick={() => setOpen(true)}
@@ -135,7 +135,8 @@ export function Navbar() {
 
       <MobileMenu
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={closeMenu}
+        triggerRef={menuButtonRef}
         nav={nav}
         ctaLabel={cta}
         ctaHref={sharedZone.cta.buttonHref || '/contact'}
@@ -148,6 +149,7 @@ export function Navbar() {
 function MobileMenu({
   open,
   onClose,
+  triggerRef,
   nav,
   ctaLabel,
   ctaHref,
@@ -155,15 +157,58 @@ function MobileMenu({
 }: {
   open: boolean
   onClose: () => void
+  triggerRef: RefObject<HTMLButtonElement | null>
   nav: NavItem[]
   ctaLabel: string
   ctaHref: string
   phone: string
 }) {
   const { brand } = useSharedZone()
+  const menuRef = useRef<HTMLDivElement>(null)
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    closeButtonRef.current?.focus()
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        onClose()
+        return
+      }
+      if (event.key !== 'Tab') return
+
+      const focusable = menuRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not(:disabled), [tabindex]:not([tabindex="-1"])',
+      )
+      if (!focusable?.length) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      const activeElement = document.activeElement
+      if (!menuRef.current?.contains(activeElement)) {
+        event.preventDefault()
+        const target = event.shiftKey ? last : first
+        target.focus()
+      } else if (event.shiftKey && activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      triggerRef.current?.focus()
+    }
+  }, [open, onClose, triggerRef])
 
   return (
     <div
+      ref={menuRef}
       className={cn(
         'fixed inset-0 z-[110] lg:hidden',
         open ? 'pointer-events-auto' : 'pointer-events-none',
@@ -180,6 +225,7 @@ function MobileMenu({
           'absolute inset-0 bg-ink-950/85 backdrop-blur-md transition-opacity duration-500',
           open ? 'opacity-100' : 'opacity-0',
         )}
+        aria-hidden="true"
         onClick={onClose}
       />
 
@@ -192,26 +238,39 @@ function MobileMenu({
       >
         <div className="mb-10 flex items-center justify-between">
           <SiteBrand compact />
-          <Button variant="quiet" className="!px-2" onClick={onClose} aria-label="Close menu">
+          <Button ref={closeButtonRef} variant="quiet" className="!px-2" onClick={onClose} aria-label="Close menu">
             <X className="h-6 w-6" />
           </Button>
         </div>
 
         <nav className="flex flex-col" aria-label="Mobile">
           {nav.map((item, index) => (
-            <Link
+            <NavLink
               key={item.href}
               to={item.href}
               onClick={onClose}
-              className="group flex items-baseline gap-4 border-b border-white/[0.06] py-4"
+              end={item.href === '/'}
+              className={({ isActive }) =>
+                cn(
+                  'group flex items-baseline gap-4 border-b border-white/[0.06] py-4',
+                  isActive && 'text-gold-200',
+                )
+              }
             >
-              <span className="font-mono text-[0.6rem] text-gold-500/60">
-                {String(index + 1).padStart(2, '0')}
-              </span>
-              <span className="font-display text-3xl font-light text-bone transition-colors duration-400 group-hover:text-gold-200">
-                {item.label}
-              </span>
-            </Link>
+              {({ isActive }) => (
+                <>
+                  <span className="font-mono text-[0.6rem] text-gold-500/60">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <span className={cn(
+                    'font-display text-3xl font-light transition-colors duration-400 group-hover:text-gold-200',
+                    isActive ? 'text-gold-200' : 'text-bone',
+                  )}>
+                    {item.label}
+                  </span>
+                </>
+              )}
+            </NavLink>
           ))}
         </nav>
 

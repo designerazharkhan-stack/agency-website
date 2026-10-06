@@ -57,19 +57,15 @@ export default function ContactPage() {
     site: site.seo,
   })
 
-  useEffect(() => {
-    void (async () => {
-      const services = await getServices()
-      setServiceOptions(services.map((service) => service.shortTitle ?? service.title))
-    })()
-  }, [])
-
   // Pre-select a service when arriving from /services?service=slug
   useEffect(() => {
+    let active = true
     const requested = searchParams.get('service')
-    if (!requested) return
     void (async () => {
       const services = await getServices()
+      if (!active) return
+      setServiceOptions(services.map((service) => service.shortTitle ?? service.title))
+      if (!requested) return
       const match = services.find((service) => service.slug === requested)
       if (!match) return
       const label = match.shortTitle ?? match.title
@@ -79,6 +75,9 @@ export default function ContactPage() {
         message: current.message || `I'd like to talk about ${match.title}. `,
       }))
     })
+    return () => {
+      active = false
+    }
   }, [searchParams])
 
   const set = <K extends keyof InquiryFormValues>(key: K, value: InquiryFormValues[K]) => {
@@ -148,19 +147,30 @@ export default function ContactPage() {
   const directEmail = contact?.email || siteEnv.contactEmail
 
   const officeList = useMemo(
-    () => [
-      ...(site.footer?.offices ?? []),
-      ...(contact?.addressLine1
-        ? [
-            {
-              id: 'hq',
-              city: contact.city || 'Head office',
-              address: `${contact.addressLine1}${contact.addressLine2 ? `, ${contact.addressLine2}` : ''}`,
-              phone: contact.phone,
-            },
-          ]
-        : []),
-    ],
+    () => {
+      const primaryAddress = [contact?.addressLine1, contact?.addressLine2]
+        .filter(Boolean)
+        .join(', ')
+        .trim()
+        .toLowerCase()
+      const otherOffices = (site.footer?.offices ?? []).filter(
+        (office) => !primaryAddress || office.address.trim().toLowerCase() !== primaryAddress,
+      )
+
+      return [
+        ...(contact?.addressLine1
+          ? [
+              {
+                id: 'hq',
+                city: contact.city || 'Head office',
+                address: [contact.addressLine1, contact.addressLine2].filter(Boolean).join(', '),
+                phone: contact.phone,
+              },
+            ]
+          : []),
+        ...otherOffices,
+      ]
+    },
     [site.footer?.offices, contact],
   )
 
@@ -248,8 +258,8 @@ export default function ContactPage() {
                     aria-hidden="true"
                   />
 
-                  <div className="space-y-3">
-                    <span className="field-label">What do you need?</span>
+                  <fieldset className="space-y-3">
+                    <legend className="field-label">What do you need?</legend>
                     <div className="flex flex-wrap gap-2">
                       {serviceOptions.map((service) => {
                         const active = values.services.includes(service)
@@ -260,7 +270,7 @@ export default function ContactPage() {
                             onClick={() => toggleService(service)}
                             aria-pressed={active}
                             className={cn(
-                              'rounded-full border px-4 py-2 text-[0.7rem] uppercase tracking-wide2 transition-all duration-400',
+                              'min-h-11 rounded-full border px-4 py-2 text-[0.7rem] uppercase tracking-wide2 transition-all duration-400',
                               active
                                 ? 'border-gold-500/60 bg-gold-500/12 text-gold-100'
                                 : 'border-white/10 bg-white/[0.02] text-bone-dim hover:border-white/25 hover:text-bone',
@@ -271,7 +281,7 @@ export default function ContactPage() {
                         )
                       })}
                     </div>
-                  </div>
+                  </fieldset>
 
                   <SelectLike
                     label="Indicative budget"
@@ -457,7 +467,7 @@ function SelectLike({
               onClick={() => onChange(option)}
               aria-pressed={active}
               className={cn(
-                'rounded-full border px-4 py-2 text-[0.7rem] transition-all duration-400',
+                'min-h-11 rounded-full border px-4 py-2 text-[0.7rem] transition-all duration-400',
                 active
                   ? 'border-gold-500/60 bg-gold-500/12 text-gold-100'
                   : 'border-white/10 bg-white/[0.02] text-bone-dim hover:border-white/25 hover:text-bone',

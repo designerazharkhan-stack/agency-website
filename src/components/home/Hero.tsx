@@ -36,7 +36,7 @@ export function Hero({ hero }: { hero: HeroSettings }) {
           <div className="lg:col-span-7">
             {hero.eyebrow ? (
               <motion.div
-                initial={{ opacity: 0, y: 16 }}
+                initial={reduce ? false : { opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               >
@@ -47,7 +47,7 @@ export function Hero({ hero }: { hero: HeroSettings }) {
             <h1 className="display mt-8 text-display-lg">
               <motion.span
                 className="block"
-                initial={{ opacity: 0, y: 34 }}
+                initial={reduce ? false : { opacity: 0, y: 34 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
               >
@@ -56,7 +56,7 @@ export function Hero({ hero }: { hero: HeroSettings }) {
 
               <motion.span
                 className="mt-2 block"
-                initial={{ opacity: 0, y: 34 }}
+                initial={reduce ? false : { opacity: 0, y: 34 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
               >
@@ -73,7 +73,7 @@ export function Hero({ hero }: { hero: HeroSettings }) {
 
             <motion.p
               className="lede mt-9 max-w-xl text-lg sm:text-xl"
-              initial={{ opacity: 0, y: 24 }}
+              initial={reduce ? false : { opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.34, ease: [0.22, 1, 0.36, 1] }}
             >
@@ -82,7 +82,7 @@ export function Hero({ hero }: { hero: HeroSettings }) {
 
             <motion.div
               className="mt-11 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4"
-              initial={{ opacity: 0, y: 22 }}
+              initial={reduce ? false : { opacity: 0, y: 22 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.46, ease: [0.22, 1, 0.36, 1] }}
             >
@@ -100,7 +100,7 @@ export function Hero({ hero }: { hero: HeroSettings }) {
 
             <motion.p
               className="mt-8 flex items-center gap-2 text-[0.7rem] uppercase tracking-wide2 text-bone-dim"
-              initial={{ opacity: 0 }}
+              initial={reduce ? false : { opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 1, delay: 0.6 }}
             >
@@ -113,7 +113,7 @@ export function Hero({ hero }: { hero: HeroSettings }) {
           {hero.imageUrl ? (
             <motion.div
               className="lg:col-span-5"
-              initial={{ opacity: 0, scale: 0.97, y: 26 }}
+              initial={reduce ? false : { opacity: 0, scale: 0.97, y: 26 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 1.3, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
             >
